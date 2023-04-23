@@ -1,0 +1,16 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+common = { workspace = true }
+packets = { workspace = true }
+types = { workspace = true }
+
+async-trait = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }

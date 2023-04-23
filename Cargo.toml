@@ -1,0 +1,28 @@
+[workspace]
+members = [
+    # Utils
+    "common",
+
+    # Common protocol utils
+    "protocol/nbt",
+    "protocol/packets",
+    "protocol/types",
+
+    # Main server logic
+    "mine-rs/server",
+]
+
+[workspace.dependencies]
+common = { path = "common" }
+packets = { path = "protocol/packets" }
+types = { path = "protocol/types" }
+
+async-trait = "0.1.68"
+clap = { version = "4.2.4", features = ["derive", "env"]}
+lazy_static = "1.4.0"
+serde = { version = "1.0.160", features = ["derive"] }
+serde_json = { version = "1.0.96" }
+tokio = { version = "1.27.0", features = ["net", "rt-multi-thread", "macros", "sync", "io-util"] }
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+uuid = { version = "1.3.1", features = ["v4", "fast-rng"] }
