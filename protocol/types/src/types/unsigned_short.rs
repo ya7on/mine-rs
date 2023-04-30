@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use common::error::MResult;
 use common::io::Buffer;
 
+/// 16-битное целое число без знака
 pub struct MinecraftUnsignedShort(u16);
 
 #[async_trait]

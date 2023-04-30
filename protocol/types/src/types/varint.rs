@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use common::error::MResult;
 use common::io::Buffer;
 
+/// Данные переменной длины, кодирующиеся в 32-битное целое число со знаком
 #[derive(Debug)]
 pub struct MinecraftVarInt(pub i32);
 

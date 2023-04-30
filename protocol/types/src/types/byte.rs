@@ -2,6 +2,7 @@ use crate::types::{Buffer, MinecraftType};
 use async_trait::async_trait;
 use common::error::MResult;
 
+/// 8-битное целое число со знаком
 #[derive(Debug)]
 pub struct MinecraftByte(pub i8);
 

@@ -4,6 +4,7 @@ use common::error::{MError, MResult};
 use common::io::Buffer;
 use uuid::Uuid;
 
+/// UUID
 pub struct MinecraftUUID(pub Uuid);
 
 #[async_trait]

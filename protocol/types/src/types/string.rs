@@ -1,9 +1,10 @@
-use crate::{MinecraftType, MinecraftUnsignedByte, MinecraftVarInt};
+use crate::{types, MinecraftType, MinecraftUnsignedByte, MinecraftVarInt};
 use async_trait::async_trait;
 use common::error::{MError, MResult};
 use common::io::Buffer;
 use common::tracing::error;
 
+/// Строковый тип. Представляет собой UTF-8 строку с префиксом длины строки в виде [VarInt](types::varint::MinecraftVarInt)
 pub struct MinecraftString(pub String);
 
 #[async_trait]

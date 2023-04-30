@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use common::error::MResult;
 use common::io::Buffer;
 
+/// 64-битное целое число со знаком
 pub struct MinecraftLong(pub i64);
 
 #[async_trait]

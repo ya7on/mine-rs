@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use common::error::{MError, MResult};
 use common::io::Buffer;
 
+/// Булевый тип
 pub struct MinecraftBoolean(pub bool);
 
 #[async_trait]
