@@ -3,7 +3,6 @@ use crate::io::writer::IOWriter;
 use async_trait::async_trait;
 use common::error::{MError, MResult};
 use common::io::Buffer;
-use common::tracing::error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use types::{MinecraftType, MinecraftVarInt};
@@ -40,7 +39,7 @@ impl TcpOutput {
 
     /// Читает следующий байт из сокета
     pub async fn next_byte(&mut self) -> MResult<u8> {
-        self.output.read_u8().await.map_err(|err| MError::from(err))
+        self.output.read_u8().await.map_err(MError::from)
     }
 }
 
@@ -57,9 +56,6 @@ pub type TcpInput = IOWriter<OwnedWriteHalf>;
 impl TcpInput {
     /// Отправляет на TCP сокет пакет, переданный в виде вектора байт
     pub async fn send_packet(&mut self, data: Vec<u8>) -> MResult<()> {
-        self.input
-            .write_all(&data)
-            .await
-            .map_err(|err| MError::from(err))
+        self.input.write_all(&data).await.map_err(MError::from)
     }
 }

@@ -10,6 +10,7 @@ use common::log::{
     init_logging,
 };
 use common::tracing::{debug, info};
+use std::time::Duration;
 use tokio::sync::mpsc::channel;
 
 mod io;
@@ -67,7 +68,7 @@ fn main() {
     let (tx, rx) = channel(MPSC_CHANNEL_BUFFER_SIZE);
 
     let for_listener_tx = TcpFacadeInput::from(tx.clone());
-    let for_ticket_tx = TcpFacadeInput::from(tx.clone());
+    let for_ticket_tx = TcpFacadeInput::from(tx);
 
     vec![
         std::thread::spawn(|| listener_thread(for_listener_tx)),
@@ -75,5 +76,7 @@ fn main() {
         std::thread::spawn(|| tcp_writer_thread(TcpFacadeOutput::from(rx))),
     ];
 
-    loop {}
+    loop {
+        std::thread::sleep(Duration::from_secs(1));
+    }
 }

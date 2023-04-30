@@ -46,11 +46,9 @@ impl Session {
         match handshake.next_state.0 {
             1 => Ok(HandshakeNextStep::Status),
             2 => Ok(HandshakeNextStep::Login),
-            _ => {
-                return Err(MError::TypeValidationError(format!(
-                    "Invalid next_step value"
-                )))
-            }
+            _ => Err(MError::TypeValidationError(
+                "Invalid next_step value".to_string(),
+            )),
         }
     }
 

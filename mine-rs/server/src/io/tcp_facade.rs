@@ -3,7 +3,6 @@ use crate::io::tcp::TcpInput;
 use crate::io::writer::IOWriter;
 use crate::tcp_facade;
 use common::error::{MError, MResult};
-use common::tracing::error;
 use tokio::sync::mpsc::{Receiver, Sender};
 use uuid::Uuid;
 

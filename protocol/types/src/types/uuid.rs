@@ -28,7 +28,7 @@ impl MinecraftType for MinecraftUUID {
             io.next_byte().await?,
             io.next_byte().await?,
         ])
-        .map_err(|err| MError::TypeValidationError("Invalid UUID".to_string()))?;
+        .map_err(|_| MError::TypeValidationError("Invalid UUID".to_string()))?;
 
         Ok(Self(value))
     }
