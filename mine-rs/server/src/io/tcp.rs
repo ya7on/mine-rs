@@ -8,9 +8,19 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use types::{MinecraftType, MinecraftVarInt};
 
+/// Интерфейс обертка для работы с читающим TCP сокетом
 pub type TcpOutput = IOReader<OwnedReadHalf>;
 
 impl TcpOutput {
+    /// Получение следующего пакета из сокета
+    /// Сначала побайтово получается длина пакета в виде [VarInt](types::MinecraftVarInt)
+    /// потом исходя из длины пакета кешируется вся остальная часть пакета, сохраняется в `Vec<u8>`
+    /// Из кешированного буфера читается ID пакета и функция возвращает результат в виде кортежа:
+    /// (
+    /// длина пакета в виде [VarInt](types::MinecraftVarInt),
+    /// ID пакета в виде [VarInt](types::MinecraftVarInt),
+    /// остальная часть пакета в виде `Vec<u8>`
+    /// )
     pub async fn next_packet(&mut self) -> MResult<(MinecraftVarInt, MinecraftVarInt, Vec<u8>)> {
         let len = MinecraftVarInt::parse_from(self).await?;
         let mut packet = self.pull_packet(len.0 as usize).await?;
@@ -19,6 +29,7 @@ impl TcpOutput {
         Ok((len, packet_id, packet))
     }
 
+    /// Вычитывает `length` байт из TCP сокета
     pub async fn pull_packet(&mut self, length: usize) -> MResult<Vec<u8>> {
         let mut result = Vec::new();
         for _ in 0..length {
@@ -27,6 +38,7 @@ impl TcpOutput {
         Ok(result)
     }
 
+    /// Читает следующий байт из сокета
     pub async fn next_byte(&mut self) -> MResult<u8> {
         self.output.read_u8().await.map_err(|err| MError::from(err))
     }
@@ -39,9 +51,11 @@ impl Buffer for TcpOutput {
     }
 }
 
+/// Интерфейс обертка для работы с пишущим TCP сокетом
 pub type TcpInput = IOWriter<OwnedWriteHalf>;
 
 impl TcpInput {
+    /// Отправляет на TCP сокет пакет, переданный в виде вектора байт
     pub async fn send_packet(&mut self, data: Vec<u8>) -> MResult<()> {
         self.input
             .write_all(&data)

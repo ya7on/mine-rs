@@ -8,6 +8,7 @@ publish = false
 
 [dependencies]
 common = { workspace = true }
+nbt = { workspace = true }
 packets = { workspace = true }
 types = { workspace = true }
 

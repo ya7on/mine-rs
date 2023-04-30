@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+/// Интерфейс обертка для различных типов данных, работающих с вводом
 #[derive(Debug)]
 pub struct IOWriter<I: Debug> {
     pub input: I,

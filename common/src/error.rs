@@ -12,6 +12,7 @@ pub enum MError {
 
 impl From<io::Error> for MError {
     fn from(value: Error) -> Self {
+        // TODO
         // match value.kind() {
         //     ErrorKind::NotFound => {}
         //     ErrorKind::PermissionDenied => {}

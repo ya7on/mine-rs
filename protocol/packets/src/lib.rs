@@ -19,6 +19,9 @@ pub mod from_server {
     pub mod login {
         pub mod login_success;
     }
+    pub mod play {
+        pub mod login;
+    }
 }
 
 #[async_trait]
