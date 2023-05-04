@@ -2,10 +2,12 @@ use async_trait::async_trait;
 use common::error::MResult;
 use common::io::Buffer;
 
+pub mod bitset;
 pub mod boolean;
 pub mod byte;
 pub mod int;
 pub mod long;
+pub mod short;
 pub mod string;
 pub mod unsigned_byte;
 pub mod unsigned_short;
