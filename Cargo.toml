@@ -1,7 +1,9 @@
 [package]
 name = "mine-rs"
+description = "Minecraft server implementation"
 version = "0.0.1"
 edition = "2021"
+authors = ["S. Suprun <hello@syoma.website>"]
 publish = false
 
 [workspace]
@@ -17,8 +19,19 @@ mclib-macros = { path = "mclib/macros" }
 mclib-protocol = { path = "mclib/protocol" }
 mclib = { path = "mclib/main" }
 
+clap = { version = "4.4.8", features = ["derive", "env"] }
 darling = { version = "0.20.3" }
+lazy_static = { version = "1.4.0" }
 syn = { version = "2.0.39" }
+tracing = { version = "0.1.40" }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+uuid = { version = "1.5.0", features = ["v4", "fast-rng", "macro-diagnostics"] }
 
 [dependencies]
 mclib = { workspace = true }
+
+clap = { workspace = true }
+lazy_static = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
