@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use std::io::Read;
 
 const MC_BOOLEAN_TRUE: u8 = 0x01;
 
@@ -28,7 +29,7 @@ impl MCType for MCBoolean {
         vec![self.0 as u8]
     }
 
-    fn unpack(src: &mut Vec<u8>) -> Self {
+    fn unpack(src: &mut dyn Read) -> Self {
         Self(Self::read_byte(src) == MC_BOOLEAN_TRUE)
     }
 }

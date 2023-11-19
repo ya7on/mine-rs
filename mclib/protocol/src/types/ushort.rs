@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct MCUShort(u16);
@@ -26,7 +27,7 @@ impl MCType for MCUShort {
         self.0.to_be_bytes().to_vec()
     }
 
-    fn unpack(src: &mut Vec<u8>) -> Self {
+    fn unpack(src: &mut dyn Read) -> Self {
         Self(u16::from_be_bytes([
             Self::read_byte(src),
             Self::read_byte(src),

@@ -49,7 +49,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 result
             }
 
-            fn unpack(src: &mut Vec<u8>) -> Self {
+            fn unpack(src: &mut dyn std::io::Read) -> Self {
                 Self {
                     #(#fields_unpack)*
                 }

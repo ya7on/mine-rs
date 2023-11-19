@@ -1,8 +1,12 @@
+use std::io::Read;
+
 pub trait MCType {
     fn pack(&self) -> Vec<u8>;
-    fn unpack(src: &mut Vec<u8>) -> Self;
+    fn unpack(src: &mut dyn Read) -> Self;
 
-    fn read_byte(src: &mut Vec<u8>) -> u8 {
-        src.remove(0)
+    fn read_byte(src: &mut dyn Read) -> u8 {
+        let mut buf = [0; 1];
+        src.read(&mut buf).unwrap();
+        buf[0]
     }
 }

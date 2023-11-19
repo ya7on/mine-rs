@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct MCByte(i8);
@@ -26,7 +27,7 @@ impl MCType for MCByte {
         vec![self.0 as u8]
     }
 
-    fn unpack(src: &mut Vec<u8>) -> Self {
+    fn unpack(src: &mut dyn Read) -> Self {
         Self(Self::read_byte(src) as i8)
     }
 }

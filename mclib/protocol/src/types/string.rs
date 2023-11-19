@@ -1,7 +1,9 @@
 use crate::types::base::MCType;
 use crate::types::varint::MCVarInt;
+use std::io::Read;
 
 // TODO max length?
+#[derive(Debug)]
 pub struct MCString(String);
 
 impl From<String> for MCString {
@@ -30,12 +32,12 @@ impl MCType for MCString {
         result
     }
 
-    fn unpack(src: &mut Vec<u8>) -> Self {
+    fn unpack(src: &mut dyn Read) -> Self {
         let string_length = MCVarInt::unpack(src);
         let mut string_buffer = Vec::new();
 
         for _ in 0..string_length.into() {
-            string_buffer.push(src.remove(0));
+            string_buffer.push(Self::read_byte(src));
         }
 
         let string_result = String::from_utf8(string_buffer).unwrap_or_default(); // TODO add error handling

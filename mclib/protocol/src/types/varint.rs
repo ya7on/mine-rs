@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use std::io::Read;
 
 const SEGMENT_BITS: u8 = 0b0111_1111;
 const CONTINUE_BIT: u8 = 0b1000_0000;
@@ -44,7 +45,7 @@ impl MCType for MCVarInt {
         result
     }
 
-    fn unpack(src: &mut Vec<u8>) -> Self {
+    fn unpack(src: &mut dyn Read) -> Self {
         let mut value = 0i32;
 
         for i in 0..5 {
