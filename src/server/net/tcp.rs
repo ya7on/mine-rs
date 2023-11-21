@@ -30,7 +30,7 @@ impl<TCPInterface: Read> TCPRead<TCPInterface> {
         let mut packet_buffer = Vec::new();
         for _ in 0..packet_length {
             let mut buf = [0; 1];
-            self.0.read(&mut buf).unwrap();
+            self.0.read_exact(&mut buf).unwrap();
             packet_buffer.extend(buf);
         }
         (packet_length, packet_buffer)
@@ -53,7 +53,7 @@ pub struct TCPWrite<TCPInterface: Write>(TCPInterface);
 
 impl<TCPInterface: Write> TCPWrite<TCPInterface> {
     pub fn write_raw(&mut self, data: Vec<u8>) {
-        self.0.write(&data).unwrap();
+        self.0.write_all(&data).unwrap();
     }
 }
 
