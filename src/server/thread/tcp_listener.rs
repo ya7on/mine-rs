@@ -1,3 +1,4 @@
+use crate::conf::conf;
 use crate::server::communicator::WriteCommunicator;
 use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
@@ -33,10 +34,11 @@ impl TCPListenerThread {
 
     pub fn handle_status(&mut self) {
         let (_, _, _) = self.tcp_read.read_specific_packet::<StatusRequest>();
+        let c = conf();
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
             body: StatusResponse {
-                json_response: r#"{"version":{"name":"1.19.4","protocol":762},"players":{"max":100,"online":5,"sample":[{"name":"thinkofdeath","id":"4566e69f-c907-48ee-8d71-d7ba5aa00d20"}]},"description":{"text":"Hello world"},"favicon":"data:image/png;base64,<data>","enforcesSecureChat":true,"previewsChat":true}"#.into(),
+                json_response: format!(r#"{{"version":{{"name":"{version}","protocol":764}},"players":{{"max":{max_players},"online":0}},"description":{{"text":"{motd}"}}}}"#, version=c.app_name, max_players=c.max_players, motd=c.motd).into(),
             }
             .pack(),
         });
