@@ -1,7 +1,7 @@
 use crate::types::base::MCType;
 use std::io::Read;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MCUByte(u8);
 
 impl From<u8> for MCUByte {

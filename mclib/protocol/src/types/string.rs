@@ -3,7 +3,7 @@ use crate::types::varint::MCVarInt;
 use std::io::Read;
 
 // TODO max length?
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MCString(String);
 
 impl From<String> for MCString {

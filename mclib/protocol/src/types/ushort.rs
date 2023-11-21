@@ -1,7 +1,7 @@
 use crate::types::base::MCType;
 use std::io::Read;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MCUShort(u16);
 
 impl From<u16> for MCUShort {

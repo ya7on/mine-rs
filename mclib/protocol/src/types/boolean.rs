@@ -3,7 +3,7 @@ use std::io::Read;
 
 const MC_BOOLEAN_TRUE: u8 = 0x01;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MCBoolean(bool);
 
 impl From<bool> for MCBoolean {

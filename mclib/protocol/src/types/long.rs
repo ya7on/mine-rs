@@ -1,7 +1,7 @@
 use crate::types::base::MCType;
 use std::io::Read;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MCLong(i64);
 
 impl Into<i64> for MCLong {

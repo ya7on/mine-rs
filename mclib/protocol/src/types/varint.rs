@@ -4,7 +4,7 @@ use std::io::Read;
 const SEGMENT_BITS: u8 = 0b0111_1111;
 const CONTINUE_BIT: u8 = 0b1000_0000;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MCVarInt(i32);
 
 impl From<i32> for MCVarInt {

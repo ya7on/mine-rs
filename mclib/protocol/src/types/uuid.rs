@@ -2,6 +2,7 @@ use crate::types::base::MCType;
 use std::io::Read;
 use uuid::Uuid;
 
+#[derive(Debug, Clone)]
 pub struct MCUuid(Uuid);
 
 impl From<Uuid> for MCUuid {

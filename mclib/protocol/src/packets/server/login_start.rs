@@ -5,7 +5,7 @@ use crate::types::uuid::MCUuid;
 use crate::types::varint::MCVarInt;
 use mclib_macros::MCPacket;
 
-#[derive(MCPacket, Debug)]
+#[derive(MCPacket, Debug, Clone)]
 #[packet(packet_id = 0x04)]
 pub struct LoginStart {
     name: MCString,
