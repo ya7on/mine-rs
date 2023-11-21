@@ -33,17 +33,20 @@ impl<TCPInterface: Read> TCPRead<TCPInterface> {
         (packet_length.into(), packet_id.into())
     }
 
-    pub fn read_specific_packet<P: MCPacket>(&mut self, compression_treshold: Option<i32>) -> P {
+    pub fn read_specific_packet_full<P: MCPacket>(
+        &mut self,
+        compression_treshold: Option<i32>,
+    ) -> (i32, i32, P) {
         let (packet_length, packet_id) = self.read_packet_header(compression_treshold);
-        P::unpack(&mut self.0)
+        (packet_length, packet_id, P::unpack(&mut self.0))
     }
 }
 
 pub struct TCPWrite<TCPInterface: Write>(TCPInterface);
 
 impl<TCPInterface: Write> TCPWrite<TCPInterface> {
-    pub fn write(&self) {
-        todo!()
+    pub fn write_raw(&mut self, data: Vec<u8>) {
+        self.0.write(&data).unwrap();
     }
 }
 
