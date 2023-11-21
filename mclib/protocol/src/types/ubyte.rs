@@ -45,8 +45,17 @@ mod tests {
 
     #[test]
     fn test_ubyte_unpack() {
-        assert_eq!(MCUByte::unpack(&mut vec![0b1000_0000]), 128);
-        assert_eq!(MCUByte::unpack(&mut vec![0b0111_1111]), 127);
-        assert_eq!(MCUByte::unpack(&mut vec![0b1111_1111]), 255);
+        assert_eq!(
+            MCUByte::unpack(&mut std::io::Cursor::new(vec![0b1000_0000])),
+            128
+        );
+        assert_eq!(
+            MCUByte::unpack(&mut std::io::Cursor::new(vec![0b0111_1111])),
+            127
+        );
+        assert_eq!(
+            MCUByte::unpack(&mut std::io::Cursor::new(vec![0b1111_1111])),
+            255
+        );
     }
 }

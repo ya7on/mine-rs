@@ -91,24 +91,42 @@ mod tests {
 
     #[test]
     fn test_varint_unpack() {
-        assert_eq!(MCVarInt::unpack(&mut vec![0x00]), 0);
-        assert_eq!(MCVarInt::unpack(&mut vec![0x01]), 1);
-        assert_eq!(MCVarInt::unpack(&mut vec![0x02]), 2);
-        assert_eq!(MCVarInt::unpack(&mut vec![0x7f]), 127);
-        assert_eq!(MCVarInt::unpack(&mut vec![0x80, 0x01]), 128);
-        assert_eq!(MCVarInt::unpack(&mut vec![0xff, 0x01]), 255);
-        assert_eq!(MCVarInt::unpack(&mut vec![0xdd, 0xc7, 0x01]), 25565);
-        assert_eq!(MCVarInt::unpack(&mut vec![0xff, 0xff, 0x7f]), 2097151);
+        assert_eq!(MCVarInt::unpack(&mut std::io::Cursor::new(vec![0x00])), 0);
+        assert_eq!(MCVarInt::unpack(&mut std::io::Cursor::new(vec![0x01])), 1);
+        assert_eq!(MCVarInt::unpack(&mut std::io::Cursor::new(vec![0x02])), 2);
+        assert_eq!(MCVarInt::unpack(&mut std::io::Cursor::new(vec![0x7f])), 127);
         assert_eq!(
-            MCVarInt::unpack(&mut vec![0xff, 0xff, 0xff, 0xff, 0x07]),
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![0x80, 0x01])),
+            128
+        );
+        assert_eq!(
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![0xff, 0x01])),
+            255
+        );
+        assert_eq!(
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![0xdd, 0xc7, 0x01])),
+            25565
+        );
+        assert_eq!(
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![0xff, 0xff, 0x7f])),
+            2097151
+        );
+        assert_eq!(
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![
+                0xff, 0xff, 0xff, 0xff, 0x07
+            ])),
             2147483647
         );
         assert_eq!(
-            MCVarInt::unpack(&mut vec![0xff, 0xff, 0xff, 0xff, 0x0f]),
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![
+                0xff, 0xff, 0xff, 0xff, 0x0f
+            ])),
             -1
         );
         assert_eq!(
-            MCVarInt::unpack(&mut vec![0x80, 0x80, 0x80, 0x80, 0x08]),
+            MCVarInt::unpack(&mut std::io::Cursor::new(vec![
+                0x80, 0x80, 0x80, 0x80, 0x08
+            ])),
             -2147483648
         );
     }

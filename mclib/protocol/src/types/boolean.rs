@@ -46,7 +46,13 @@ mod tests {
 
     #[test]
     fn test_boolean_unpack() {
-        assert_eq!(MCBoolean::unpack(&mut vec![0b1]), true);
-        assert_eq!(MCBoolean::unpack(&mut vec![0b0]), false);
+        assert_eq!(
+            MCBoolean::unpack(&mut std::io::Cursor::new(vec![0b1])),
+            true
+        );
+        assert_eq!(
+            MCBoolean::unpack(&mut std::io::Cursor::new(vec![0b0])),
+            false
+        );
     }
 }
