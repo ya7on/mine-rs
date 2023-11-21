@@ -223,6 +223,7 @@ name = "mclib-protocol"
 version = "0.1.0"
 dependencies = [
  "mclib-macros",
+ "uuid",
 ]
 
 [[package]]

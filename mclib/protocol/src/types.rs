@@ -5,4 +5,5 @@ pub mod long;
 pub mod string;
 pub mod ubyte;
 pub mod ushort;
+pub mod uuid;
 pub mod varint;
