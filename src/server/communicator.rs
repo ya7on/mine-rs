@@ -4,7 +4,7 @@ use std::sync::mpsc::{Receiver, Sender};
 pub struct Communicator;
 
 impl Communicator {
-    pub fn new<API>() -> (ReadCommunicator<API>, WriteCommunicator<API>) {
+    pub fn create<API>() -> (ReadCommunicator<API>, WriteCommunicator<API>) {
         let (write, read) = mpsc::channel();
         (ReadCommunicator(read), WriteCommunicator(write))
     }

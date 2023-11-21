@@ -19,8 +19,8 @@ impl MinersApp {
 
     pub fn run(&self) {
         let (thread_manager_api_reader, thread_manager_api_writer) =
-            Communicator::new::<ThreadManagerAPI>();
-        let (tcp_writer_api_reader, tcp_writer_api_writer) = Communicator::new::<TCPWriterAPI>();
+            Communicator::create::<ThreadManagerAPI>();
+        let (tcp_writer_api_reader, tcp_writer_api_writer) = Communicator::create::<TCPWriterAPI>();
 
         let tcp_acceptor = TCPAcceptorThread::new(
             self.parameters.host.clone(),
