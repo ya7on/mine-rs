@@ -50,7 +50,7 @@ impl MCType for MCVarInt {
 
         for i in 0..5 {
             let current_byte = Self::read_byte(src);
-            value |= ((current_byte & SEGMENT_BITS) as i32) << i * 7;
+            value |= ((current_byte & SEGMENT_BITS) as i32) << (i * 7);
 
             if (current_byte & CONTINUE_BIT) == 0 {
                 break;
