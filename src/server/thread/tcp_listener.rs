@@ -1,9 +1,10 @@
 use crate::server::communicator::WriteCommunicator;
 use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
-use mclib::{
-    Handshake, HandshakeNextState, MCPacket, MCVarInt, PingRequest, StatusRequest, StatusResponse,
-};
+use mclib::packets::client::StatusResponse;
+use mclib::packets::server::{Handshake, HandshakeNextState, PingRequest, StatusRequest};
+use mclib::types::MCVarInt;
+use mclib::MCPacket;
 
 pub struct TCPListenerThread {
     uid: u128,

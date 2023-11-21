@@ -1,4 +1,5 @@
-use mclib::{MCPacket, MCType, MCVarInt};
+use mclib::types::MCVarInt;
+use mclib::{MCPacket, MCType};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 
