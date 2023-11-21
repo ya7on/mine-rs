@@ -12,6 +12,12 @@ impl From<String> for MCString {
     }
 }
 
+impl From<&str> for MCString {
+    fn from(value: &str) -> Self {
+        Self(value.to_owned())
+    }
+}
+
 impl Into<String> for MCString {
     fn into(self) -> String {
         self.0
