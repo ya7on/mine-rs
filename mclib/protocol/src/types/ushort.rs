@@ -10,9 +10,9 @@ impl From<u16> for MCUShort {
     }
 }
 
-impl Into<u16> for MCUShort {
-    fn into(self) -> u16 {
-        self.0
+impl From<MCUShort> for u16 {
+    fn from(value: MCUShort) -> Self {
+        value.0
     }
 }
 

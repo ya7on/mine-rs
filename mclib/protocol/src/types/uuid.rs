@@ -11,9 +11,9 @@ impl From<Uuid> for MCUuid {
     }
 }
 
-impl Into<Uuid> for MCUuid {
-    fn into(self) -> Uuid {
-        self.0
+impl From<MCUuid> for Uuid {
+    fn from(value: MCUuid) -> Self {
+        value.0
     }
 }
 

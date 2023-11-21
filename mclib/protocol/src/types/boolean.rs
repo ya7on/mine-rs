@@ -12,9 +12,9 @@ impl From<bool> for MCBoolean {
     }
 }
 
-impl Into<bool> for MCBoolean {
-    fn into(self) -> bool {
-        self.0
+impl From<MCBoolean> for bool {
+    fn from(value: MCBoolean) -> Self {
+        value.0
     }
 }
 

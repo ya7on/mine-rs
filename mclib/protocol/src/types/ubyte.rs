@@ -10,9 +10,9 @@ impl From<u8> for MCUByte {
     }
 }
 
-impl Into<u8> for MCUByte {
-    fn into(self) -> u8 {
-        self.0
+impl From<MCUByte> for u8 {
+    fn from(value: MCUByte) -> Self {
+        value.0
     }
 }
 

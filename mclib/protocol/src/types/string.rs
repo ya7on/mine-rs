@@ -18,9 +18,9 @@ impl From<&str> for MCString {
     }
 }
 
-impl Into<String> for MCString {
-    fn into(self) -> String {
-        self.0
+impl From<MCString> for String {
+    fn from(value: MCString) -> Self {
+        value.0
     }
 }
 

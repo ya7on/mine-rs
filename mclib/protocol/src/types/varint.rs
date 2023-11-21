@@ -13,9 +13,9 @@ impl From<i32> for MCVarInt {
     }
 }
 
-impl Into<i32> for MCVarInt {
-    fn into(self) -> i32 {
-        self.0
+impl From<MCVarInt> for i32 {
+    fn from(value: MCVarInt) -> Self {
+        value.0
     }
 }
 

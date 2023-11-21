@@ -4,9 +4,9 @@ use std::io::Read;
 #[derive(Debug, Clone)]
 pub struct MCLong(i64);
 
-impl Into<i64> for MCLong {
-    fn into(self) -> i64 {
-        self.0
+impl From<MCLong> for i64 {
+    fn from(value: MCLong) -> Self {
+        value.0
     }
 }
 
