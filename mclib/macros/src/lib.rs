@@ -6,7 +6,7 @@ use syn::{parse_macro_input, DeriveInput};
 #[derive(FromDeriveInput, Default)]
 #[darling(attributes(packet))]
 struct Opts {
-    packet_id: u8,
+    packet_id: i32,
 }
 
 #[proc_macro_derive(MCPacket, attributes(packet))]
@@ -26,7 +26,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let fields_pack = data.fields.iter().map(|f| {
         let name = &f.ident;
         quote! {
-            result.extend(MCType::pack(&self.#name));
+            body.extend(MCType::pack(&self.#name));
         }
     });
 
@@ -39,13 +39,17 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl MCPacket for #ident {
-            fn packet_id(&self) -> u8 {
+            fn packet_id(&self) -> i32 {
                 #packet_id
             }
 
             fn pack(&self) -> Vec<u8> {
-                let mut result = Vec::new();
+                let mut body = Vec::new();
+                body.extend(MCVarInt::from(self.packet_id()).pack());
                 #(#fields_pack)*
+                let mut result = Vec::new();
+                result.extend(MCVarInt::from(body.len() as i32).pack());
+                result.extend(body);
                 result
             }
 
