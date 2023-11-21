@@ -10,7 +10,6 @@ pub struct TCPListenerThread {
     uid: u128,
     tcp_read: TCPRead<NativeRead>,
     tcp_writer_api: WriteCommunicator<TCPWriterAPI>,
-    compression_treshold: Option<i32>,
 }
 
 impl TCPListenerThread {
@@ -23,22 +22,17 @@ impl TCPListenerThread {
             uid,
             tcp_read,
             tcp_writer_api,
-            compression_treshold: None,
         }
     }
 
     pub fn handle_handshake(&mut self) -> HandshakeNextState {
-        let (_, _, handshake) = self
-            .tcp_read
-            .read_specific_packet_full::<Handshake>(self.compression_treshold);
+        let (_, _, handshake) = self.tcp_read.read_specific_packet::<Handshake>();
         let next_state = handshake.next_state;
         HandshakeNextState::from(<MCVarInt as Into<i32>>::into(next_state))
     }
 
     pub fn handle_status(&mut self) {
-        let (_, _, _) = self
-            .tcp_read
-            .read_specific_packet_full::<StatusRequest>(self.compression_treshold);
+        let (_, _, _) = self.tcp_read.read_specific_packet::<StatusRequest>();
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
             body: StatusResponse {
@@ -47,9 +41,7 @@ impl TCPListenerThread {
             .pack(),
         });
 
-        let (_, _, ping) = self
-            .tcp_read
-            .read_specific_packet_full::<PingRequest>(self.compression_treshold);
+        let (_, _, ping) = self.tcp_read.read_specific_packet::<PingRequest>();
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
             body: ping.pack(),
