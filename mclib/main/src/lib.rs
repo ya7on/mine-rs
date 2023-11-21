@@ -4,6 +4,7 @@ pub use mclib_protocol::types::base::MCType;
 pub mod packets {
     pub mod server {
         pub use mclib_protocol::packets::server::handshake::{Handshake, HandshakeNextState};
+        pub use mclib_protocol::packets::server::login_start::LoginStart;
         pub use mclib_protocol::packets::server::ping::PingRequest;
         pub use mclib_protocol::packets::server::status_request::StatusRequest;
     }
