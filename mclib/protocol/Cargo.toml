@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 mclib-macros = { workspace = true }
 
+flate2 = { workspace = true }
 uuid = { workspace = true }

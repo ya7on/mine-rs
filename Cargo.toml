@@ -21,6 +21,7 @@ mclib = { path = "mclib/main" }
 
 clap = { version = "4.4.8", features = ["derive", "env"] }
 darling = { version = "0.20.3" }
+flate2 = { version = "1.0.28" }
 lazy_static = { version = "1.4.0" }
 syn = { version = "2.0.39" }
 tracing = { version = "0.1.40" }
