@@ -5,7 +5,7 @@ pub struct TagDouble(f64);
 
 impl IntoNBTTag for f64 {
     fn to_nbt(self) -> Box<dyn NBTTag> {
-        Box::new(TagDouble(self.clone()))
+        Box::new(TagDouble(self))
     }
 }
 

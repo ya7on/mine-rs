@@ -5,7 +5,7 @@ pub struct TagByte(i8);
 
 impl IntoNBTTag for i8 {
     fn to_nbt(self) -> Box<dyn NBTTag> {
-        Box::new(TagByte(self.clone()))
+        Box::new(TagByte(self))
     }
 }
 

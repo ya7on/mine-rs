@@ -5,7 +5,7 @@ pub struct TagShort(i16);
 
 impl IntoNBTTag for i16 {
     fn to_nbt(self) -> Box<dyn NBTTag> {
-        Box::new(TagShort(self.clone()))
+        Box::new(TagShort(self))
     }
 }
 

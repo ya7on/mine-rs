@@ -5,7 +5,7 @@ pub struct TagFloat(f32);
 
 impl IntoNBTTag for f32 {
     fn to_nbt(self) -> Box<dyn NBTTag> {
-        Box::new(TagFloat(self.clone()))
+        Box::new(TagFloat(self))
     }
 }
 

@@ -18,7 +18,7 @@ impl NBTTag for TagByteArray {
         let mut result = Vec::new();
         result.extend((1000i32).to_be_bytes());
         for b in &self.0 {
-            result.push(b.clone() as u8);
+            result.push(*b as u8);
         }
         result
     }

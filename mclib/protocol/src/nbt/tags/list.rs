@@ -19,7 +19,7 @@ impl NBTTag for TagList {
         let len = self.0.len() as i32;
         let mut elements = Vec::new();
 
-        for (element) in self.0.iter() {
+        for element in self.0.iter() {
             ty = element.ty_id();
             elements.extend(element.pack());
         }

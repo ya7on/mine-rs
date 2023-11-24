@@ -5,7 +5,7 @@ pub struct TagLong(i64);
 
 impl IntoNBTTag for i64 {
     fn to_nbt(self) -> Box<dyn NBTTag> {
-        Box::new(TagLong(self.clone()))
+        Box::new(TagLong(self))
     }
 }
 
