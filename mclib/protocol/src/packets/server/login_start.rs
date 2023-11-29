@@ -6,8 +6,8 @@ use crate::types::varint::MCVarInt;
 use mclib_macros::MCPacket;
 
 #[derive(MCPacket, Debug, Clone)]
-#[packet(packet_id = 0x04)]
+#[packet(packet_id = 0x00)]
 pub struct LoginStart {
-    name: MCString,
-    player_uuid: MCUuid,
+    pub name: MCString,
+    pub player_uuid: MCUuid,
 }
