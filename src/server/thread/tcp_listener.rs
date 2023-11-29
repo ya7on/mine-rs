@@ -2,8 +2,10 @@ use crate::conf::conf;
 use crate::server::communicator::WriteCommunicator;
 use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
-use mclib::packets::client::StatusResponse;
-use mclib::packets::server::{Handshake, HandshakeNextState, PingRequest, StatusRequest};
+use mclib::packets::client::{LoginSuccess, StatusResponse};
+use mclib::packets::server::{
+    Handshake, HandshakeNextState, LoginStart, PingRequest, StatusRequest,
+};
 use mclib::types::MCVarInt;
 use mclib::MCPacket;
 
@@ -27,13 +29,13 @@ impl TCPListenerThread {
     }
 
     pub fn handle_handshake(&mut self) -> HandshakeNextState {
-        let (_, _, handshake) = self.tcp_read.read_specific_packet::<Handshake>();
+        let handshake = self.tcp_read.read_packet().parse_packet::<Handshake>();
         let next_state = handshake.next_state;
         HandshakeNextState::from(<MCVarInt as Into<i32>>::into(next_state))
     }
 
     pub fn handle_status(&mut self) {
-        let (_, _, _) = self.tcp_read.read_specific_packet::<StatusRequest>();
+        let _ = self.tcp_read.read_packet().parse_packet::<StatusRequest>();
         let c = conf();
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
@@ -43,11 +45,34 @@ impl TCPListenerThread {
             .pack(),
         });
 
-        let (_, _, ping) = self.tcp_read.read_specific_packet::<PingRequest>();
+        let ping = self.tcp_read.read_packet().parse_packet::<PingRequest>();
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
             body: ping.pack(),
         });
+    }
+
+    pub fn handle_login(&mut self) {
+        loop {
+            let mut packet = self.tcp_read.read_packet();
+
+            match packet.id {
+                0x00 => {
+                    let login_start = packet.parse_packet::<LoginStart>();
+                    let login_success = LoginSuccess {
+                        uuid: login_start.player_uuid,
+                        username: login_start.name,
+                        properties: vec![],
+                    };
+
+                    self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+                        uid: self.uid,
+                        body: login_success.pack(),
+                    })
+                }
+                _ => break,
+            }
+        }
     }
 
     pub fn execute(&mut self) {
@@ -56,7 +81,7 @@ impl TCPListenerThread {
                 self.handle_status();
             }
             HandshakeNextState::Login => {
-                unimplemented!()
+                self.handle_login();
             }
             HandshakeNextState::Unknown => {
                 error!("Unknown next state for handshake");

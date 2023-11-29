@@ -1,5 +1,4 @@
-use mclib::types::MCVarInt;
-use mclib::{MCPacket, MCType};
+use crate::server::packet::Packet;
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 
@@ -25,27 +24,8 @@ impl TCPServer<NativeTCP> {
 pub struct TCPRead<TCPInterface: Read>(TCPInterface);
 
 impl<TCPInterface: Read> TCPRead<TCPInterface> {
-    pub fn read_raw_packet(&mut self) -> (i32, Vec<u8>) {
-        let packet_length = MCVarInt::unpack(&mut self.0).into();
-        let mut packet_buffer = Vec::new();
-        for _ in 0..packet_length {
-            let mut buf = [0; 1];
-            self.0.read_exact(&mut buf).unwrap();
-            packet_buffer.extend(buf);
-        }
-        (packet_length, packet_buffer)
-    }
-
-    pub fn unpack_packet_id(buffer: &mut dyn Read) -> i32 {
-        MCVarInt::unpack(buffer).into()
-    }
-
-    pub fn read_specific_packet<P: MCPacket>(&mut self) -> (i32, i32, P) {
-        let (packet_length, raw_packet) = self.read_raw_packet();
-        let mut packet_cursor = std::io::Cursor::new(raw_packet);
-        let packet_id = Self::unpack_packet_id(&mut packet_cursor);
-        let packet = P::unpack(&mut packet_cursor);
-        (packet_length, packet_id, packet)
+    pub fn read_packet(&mut self) -> Packet {
+        Packet::init(&mut self.0)
     }
 }
 
