@@ -1,6 +1,6 @@
 use crate::server::packet::Packet;
 use std::io::{Read, Write};
-use std::net::{SocketAddr, TcpListener, TcpStream};
+use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
 
 pub type NativeTCP = TcpListener;
 pub type NativeRead = TcpStream;
@@ -29,11 +29,23 @@ impl<TCPInterface: Read> TCPRead<TCPInterface> {
     }
 }
 
+impl TCPRead<NativeRead> {
+    pub fn close(&mut self) {
+        self.0.shutdown(Shutdown::Both).unwrap()
+    }
+}
+
 pub struct TCPWrite<TCPInterface: Write>(TCPInterface);
 
 impl<TCPInterface: Write> TCPWrite<TCPInterface> {
     pub fn write_raw(&mut self, data: Vec<u8>) {
         self.0.write_all(&data).unwrap();
+    }
+}
+
+impl TCPWrite<NativeWrite> {
+    pub fn close(&mut self) {
+        self.0.shutdown(Shutdown::Both).unwrap()
     }
 }
 
