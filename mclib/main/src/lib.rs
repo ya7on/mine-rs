@@ -27,7 +27,7 @@ pub mod types {
     pub use mclib_protocol::types::varint::MCVarInt;
 }
 pub mod nbt {
-    pub use mclib_protocol::nbt::tags::base::NBTTag;
+    pub use mclib_protocol::nbt::tags::base::{IntoNBTTag, NBTTag};
     pub use mclib_protocol::nbt::tags::byte::TagByte;
     pub use mclib_protocol::nbt::tags::byte_array::TagByteArray;
     pub use mclib_protocol::nbt::tags::compound::TagCompound;
@@ -38,4 +38,5 @@ pub mod nbt {
     pub use mclib_protocol::nbt::tags::long::TagLong;
     pub use mclib_protocol::nbt::tags::short::TagShort;
     pub use mclib_protocol::nbt::tags::string::TagString;
+    pub use mclib_protocol::nbt::NBT;
 }
