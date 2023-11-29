@@ -10,6 +10,9 @@ pub mod packets {
         pub use mclib_protocol::packets::server::status_request::StatusRequest;
     }
     pub mod client {
+        pub use mclib_protocol::packets::client::login_success::{
+            LoginSuccess, LoginSuccessProperty,
+        };
         pub use mclib_protocol::packets::client::status_response::StatusResponse;
     }
 }
