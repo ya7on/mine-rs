@@ -4,7 +4,7 @@ use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
 use mclib::packets::client::{LoginSuccess, StatusResponse};
 use mclib::packets::server::{
-    Handshake, HandshakeNextState, LoginStart, PingRequest, StatusRequest,
+    Handshake, HandshakeNextState, LoginAcknowledged, LoginStart, PingRequest, StatusRequest,
 };
 use mclib::types::MCVarInt;
 use mclib::MCPacket;
@@ -70,9 +70,17 @@ impl TCPListenerThread {
                         body: login_success.pack(),
                     })
                 }
+                0x01 => {
+                    let _login_acknowledged = packet.parse_packet::<LoginAcknowledged>();
+                    return;
+                }
                 _ => break,
             }
         }
+    }
+
+    pub fn handle_configuration(&mut self) {
+        todo!()
     }
 
     pub fn execute(&mut self) {
@@ -82,6 +90,7 @@ impl TCPListenerThread {
             }
             HandshakeNextState::Login => {
                 self.handle_login();
+                self.handle_configuration();
             }
             HandshakeNextState::Unknown => {
                 error!("Unknown next state for handshake");
