@@ -89,5 +89,8 @@ impl TCPListenerThread {
             }
         }
         debug!("End connection");
+        self.tcp_read.close();
+        self.tcp_writer_api
+            .send(TCPWriterAPI::CloseConnection { uid: self.uid });
     }
 }

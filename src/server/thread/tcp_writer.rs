@@ -12,6 +12,9 @@ pub enum TCPWriterAPI {
         uid: u128,
         body: Vec<u8>,
     },
+    CloseConnection {
+        uid: u128,
+    },
 }
 
 pub struct TCPWriterThread {
@@ -36,6 +39,11 @@ impl TCPWriterThread {
                 TCPWriterAPI::SendMessageRaw { uid, body } => {
                     if let Some(socket) = self.sockets.get_mut(&uid) {
                         socket.write_raw(body);
+                    }
+                }
+                TCPWriterAPI::CloseConnection { uid } => {
+                    if let Some(socket) = self.sockets.get_mut(&uid) {
+                        socket.close();
                     }
                 }
             }
