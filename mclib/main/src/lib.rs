@@ -1,4 +1,5 @@
 pub use mclib_macros::MCPacket;
+pub use mclib_macros::MCType;
 pub use mclib_protocol::packets::base::MCPacket;
 pub use mclib_protocol::types::base::MCType;
 pub mod packets {
