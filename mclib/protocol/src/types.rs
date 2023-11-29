@@ -2,6 +2,7 @@ pub mod base;
 pub mod boolean;
 pub mod byte;
 pub mod long;
+pub mod option;
 pub mod string;
 pub mod ubyte;
 pub mod ushort;
