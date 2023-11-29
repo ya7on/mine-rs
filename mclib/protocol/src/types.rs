@@ -8,3 +8,4 @@ pub mod ubyte;
 pub mod ushort;
 pub mod uuid;
 pub mod varint;
+pub mod vec;
