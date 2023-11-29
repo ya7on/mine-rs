@@ -7,6 +7,7 @@ use tracing::Level;
 use tracing_subscriber::EnvFilter;
 
 mod conf;
+mod registry;
 mod server;
 
 fn main() {
