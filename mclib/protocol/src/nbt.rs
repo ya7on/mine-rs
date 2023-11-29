@@ -2,7 +2,7 @@ use crate::nbt::tags::base::NBTTag;
 
 pub mod tags;
 
-pub struct NBT(Option<String>, Box<dyn NBTTag>);
+pub struct NBT(pub Option<String>, pub Box<dyn NBTTag>);
 
 impl NBT {
     pub fn pack(&self) -> Vec<u8> {
