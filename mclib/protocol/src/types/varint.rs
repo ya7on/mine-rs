@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use crate::utils::TcpUtils;
 use std::io::Read;
 
 const SEGMENT_BITS: u8 = 0b0111_1111;
@@ -49,7 +50,7 @@ impl MCType for MCVarInt {
         let mut value = 0i32;
 
         for i in 0..5 {
-            let current_byte = Self::read_byte(src);
+            let current_byte = src.read_byte();
             value |= ((current_byte & SEGMENT_BITS) as i32) << (i * 7);
 
             if (current_byte & CONTINUE_BIT) == 0 {

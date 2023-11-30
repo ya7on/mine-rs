@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use crate::utils::TcpUtils;
 use std::io::Read;
 
 const MC_BOOLEAN_TRUE: u8 = 0x01;
@@ -30,7 +31,7 @@ impl MCType for MCBoolean {
     }
 
     fn unpack(src: &mut dyn Read) -> Self {
-        Self(Self::read_byte(src) == MC_BOOLEAN_TRUE)
+        Self(src.read_byte() == MC_BOOLEAN_TRUE)
     }
 }
 
