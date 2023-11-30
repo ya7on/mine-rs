@@ -1,5 +1,6 @@
 use crate::types::base::MCType;
 use crate::types::varint::MCVarInt;
+use crate::utils::TcpUtils;
 use std::io::Read;
 
 // TODO max length?
@@ -43,7 +44,7 @@ impl MCType for MCString {
         let mut string_buffer = Vec::new();
 
         for _ in 0..string_length.into() {
-            string_buffer.push(Self::read_byte(src));
+            string_buffer.push(src.read_byte());
         }
 
         let string_result = String::from_utf8(string_buffer).unwrap_or_default(); // TODO add error handling

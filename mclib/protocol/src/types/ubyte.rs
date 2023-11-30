@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use crate::utils::TcpUtils;
 use std::io::Read;
 
 #[derive(Debug, Clone)]
@@ -28,7 +29,7 @@ impl MCType for MCUByte {
     }
 
     fn unpack(src: &mut dyn Read) -> Self {
-        Self(Self::read_byte(src))
+        Self(src.read_byte())
     }
 }
 

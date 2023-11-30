@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use crate::utils::TcpUtils;
 use std::io::Read;
 use uuid::Uuid;
 
@@ -30,22 +31,22 @@ impl MCType for MCUuid {
 
     fn unpack(src: &mut dyn Read) -> Self {
         Self(Uuid::from_u128(u128::from_be_bytes([
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
         ])))
     }
 }

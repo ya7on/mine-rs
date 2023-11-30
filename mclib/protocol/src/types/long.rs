@@ -1,4 +1,5 @@
 use crate::types::base::MCType;
+use crate::utils::TcpUtils;
 use std::io::Read;
 
 #[derive(Debug, Clone)]
@@ -29,14 +30,14 @@ impl MCType for MCLong {
 
     fn unpack(src: &mut dyn Read) -> Self {
         Self(i64::from_be_bytes([
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
-            Self::read_byte(src),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
         ]))
     }
 }
