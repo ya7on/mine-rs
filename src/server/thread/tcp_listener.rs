@@ -5,13 +5,14 @@ use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
 use mclib::nbt::NBT;
 use mclib::packets::client::{
-    FinishConfigurationClientbound, LoginSuccess, Play, RegistryData, StatusResponse,
+    FinishConfigurationClientbound, LoginSuccess, Play, RegistryData, SetDefaultSpawnPosition,
+    StatusResponse, SynchronizePlayerPosition,
 };
 use mclib::packets::server::{
     FinishConfigurationServerbound, Handshake, HandshakeNextState, LoginAcknowledged, LoginStart,
     PingRequest, StatusRequest,
 };
-use mclib::types::MCVarInt;
+use mclib::types::{MCPosition, MCVarInt};
 use mclib::MCPacket;
 
 pub struct TCPListenerThread {
@@ -134,6 +135,29 @@ impl TCPListenerThread {
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
             body: play.pack(),
+        });
+
+        let synchronize_player_position = SynchronizePlayerPosition {
+            x: 0.0.into(),
+            y: 0.0.into(),
+            z: 0.0.into(),
+            yaw: 0.0.into(),
+            pitch: 0.0.into(),
+            flags: 0.into(),
+            teleport_id: 0.into(),
+        };
+        self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+            uid: self.uid,
+            body: synchronize_player_position.pack(),
+        });
+
+        let set_default_spawn_position = SetDefaultSpawnPosition {
+            location: MCPosition { x: 0, y: 0, z: 0 },
+            angle: 0.0.into(),
+        };
+        self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+            uid: self.uid,
+            body: set_default_spawn_position.pack(),
         });
     }
 
