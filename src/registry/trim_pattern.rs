@@ -1,6 +1,9 @@
+use crate::registry::{bool_from_int, Description};
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
 
 /// The minecraft:trim_pattern registry. It defines various visual properties of trim patterns in armors.
+#[derive(Deserialize, Debug)]
 pub struct ArmorTrimPattern {
     /// The trim pattern model to be rendered on top of the armor.
     /// The Notchian client uses the corresponding asset located at trims/models/armor.
@@ -13,8 +16,9 @@ pub struct ArmorTrimPattern {
     /// Example: `minecraft:coast_armor_trim_smithing_template`.
     pub template_item: String,
     /// The name of the trim pattern to be displayed on the armor tool-tip.
-    pub description: String,
+    pub description: Description,
     /// Whether this trim is a decal.
+    #[serde(deserialize_with = "bool_from_int")]
     pub decal: bool,
 }
 

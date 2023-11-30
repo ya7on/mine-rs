@@ -1,5 +1,7 @@
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
 
+#[derive(Deserialize, Debug)]
 pub struct DamageType {
     /// Id of the death message. The full message is displayed as `death.attack.<message_id>`.
     ///
