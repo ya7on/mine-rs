@@ -1,4 +1,6 @@
 use crate::nbt::tags::base::{IntoNBTTag, NBTTag};
+use crate::utils::TcpUtils;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct TagString(Vec<u8>);
@@ -25,5 +27,14 @@ impl NBTTag for TagString {
         result.extend((self.0.len() as u16).to_be_bytes());
         result.extend(&self.0);
         result
+    }
+
+    fn unpack(src: &mut dyn Read) -> Self {
+        let length = u16::from_be_bytes([src.read_byte(), src.read_byte()]);
+        let mut result = Vec::new();
+        for _ in 0..length {
+            result.push(src.read_byte());
+        }
+        Self(result)
     }
 }

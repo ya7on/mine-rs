@@ -1,4 +1,6 @@
-use crate::nbt::tags::base::{IntoNBTTag, NBTTag};
+use crate::nbt::tags::base::{unpack_by_ty_id, IntoNBTTag, NBTTag};
+use crate::utils::TcpUtils;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct TagList(Vec<Box<dyn NBTTag>>);
@@ -28,5 +30,20 @@ impl NBTTag for TagList {
         result.extend(len.to_be_bytes());
         result.extend(elements);
         result
+    }
+
+    fn unpack(src: &mut dyn Read) -> Self {
+        let mut result = Vec::<Box<dyn NBTTag>>::new();
+        let ty_id = src.read_byte();
+        let length = i32::from_be_bytes([
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+            src.read_byte(),
+        ]);
+        for _ in 0..length {
+            result.push(unpack_by_ty_id(ty_id, src));
+        }
+        Self(result)
     }
 }

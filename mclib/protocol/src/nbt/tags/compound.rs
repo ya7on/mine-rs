@@ -1,4 +1,6 @@
-use crate::nbt::tags::base::{IntoNBTTag, NBTTag};
+use crate::nbt::tags::base::{unpack_by_ty_id, IntoNBTTag, NBTTag};
+use crate::utils::TcpUtils;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct TagCompound(Vec<(String, Box<dyn NBTTag>)>);
@@ -29,5 +31,25 @@ impl NBTTag for TagCompound {
         }
         result.push(0x00);
         result
+    }
+
+    fn unpack(src: &mut dyn Read) -> Self {
+        let mut result = Vec::<(String, Box<dyn NBTTag>)>::new();
+        let read_name = |src: &mut dyn Read| {
+            let name_len = u16::from_be_bytes([src.read_byte(), src.read_byte()]);
+            let mut name_bytes = Vec::new();
+            for _ in 0..name_len {
+                name_bytes.push(src.read_byte());
+            }
+            String::from_utf8(name_bytes).unwrap()
+        };
+        loop {
+            let ty_id = src.read_byte();
+            if ty_id == 0 {
+                break;
+            }
+            result.push((read_name(src), unpack_by_ty_id(ty_id, src)));
+        }
+        Self(result)
     }
 }

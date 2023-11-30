@@ -1,4 +1,6 @@
 use crate::nbt::tags::base::{IntoNBTTag, NBTTag};
+use crate::utils::TcpUtils;
+use std::io::Read;
 
 #[derive(Debug)]
 pub struct TagByte(i8);
@@ -16,5 +18,9 @@ impl NBTTag for TagByte {
 
     fn pack(&self) -> Vec<u8> {
         vec![self.0 as u8]
+    }
+
+    fn unpack(src: &mut dyn Read) -> Self {
+        Self(src.read_byte() as i8)
     }
 }
