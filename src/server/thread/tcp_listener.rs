@@ -5,13 +5,13 @@ use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
 use mclib::nbt::NBT;
 use mclib::packets::client::{
-    FinishConfigurationClientbound, LoginSuccess, RegistryData, StatusResponse,
+    FinishConfigurationClientbound, LoginSuccess, Play, RegistryData, StatusResponse,
 };
 use mclib::packets::server::{
     FinishConfigurationServerbound, Handshake, HandshakeNextState, LoginAcknowledged, LoginStart,
     PingRequest, StatusRequest,
 };
-use mclib::types::{MCVarInt, MCNBT};
+use mclib::types::MCVarInt;
 use mclib::MCPacket;
 
 pub struct TCPListenerThread {
@@ -91,7 +91,7 @@ impl TCPListenerThread {
         .unwrap();
         let registry_data_nbt = NBT::from(registry_data);
         let registry_data_packet = RegistryData {
-            registry_data: MCNBT::from(registry_data_nbt),
+            registry_data: registry_data_nbt.into(),
         };
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
@@ -110,7 +110,32 @@ impl TCPListenerThread {
             .parse_packet::<FinishConfigurationServerbound>();
     }
 
-    pub fn handle_play(&mut self) {}
+    pub fn handle_play(&mut self) {
+        let play = Play {
+            entity_id: 0.into(),
+            is_hardcore: false.into(),
+            dimensions: vec![],
+            max_players: 25.into(),
+            view_distance: 2.into(),
+            simulation_distance: 2.into(),
+            reduced_debug_info: true.into(),
+            enable_respawn_screen: true.into(),
+            do_limited_crafting: true.into(),
+            dimension_type: "minecraft:overworld".into(),
+            dimension_name: "minecraft:overworld".into(),
+            hashed_seed: 0.into(),
+            game_mode: 0.into(),
+            previous_game_mode: 0.into(),
+            is_debug: true.into(),
+            is_flat: true.into(),
+            death_info: None,
+            portal_cooldown: 1.into(),
+        };
+        self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+            uid: self.uid,
+            body: play.pack(),
+        });
+    }
 
     pub fn execute(&mut self) {
         match self.handle_handshake() {
