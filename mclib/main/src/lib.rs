@@ -24,6 +24,7 @@ pub mod packets {
 pub mod types {
     pub use mclib_protocol::types::boolean::MCBoolean;
     pub use mclib_protocol::types::byte::MCByte;
+    pub use mclib_protocol::types::double::MCDouble;
     pub use mclib_protocol::types::int::MCInt;
     pub use mclib_protocol::types::long::MCLong;
     pub use mclib_protocol::types::nbt::MCNBT;
