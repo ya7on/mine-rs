@@ -1,6 +1,8 @@
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
 
 /// The Registry Entry Compound Tag specifies a single entry of a Registry.
+#[derive(Deserialize, Debug)]
 pub struct RegistryEntry<T: IntoNBTTag> {
     name: String,
     id: i32,

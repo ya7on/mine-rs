@@ -1,6 +1,9 @@
+use crate::registry::bool_from_int;
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
 
 /// Biome special effects.
+#[derive(Deserialize, Debug)]
 pub struct BiomeEffects {
     /// The color of the fog effect when looking past the view distance.
     pub fog_color: i32,
@@ -27,14 +30,16 @@ impl IntoNBTTag for BiomeEffects {
 
 /// The `minecraft:worldgen/biome` registry.
 /// It defines several aesthetic characteristics of the biomes present in the game.
+#[derive(Deserialize, Debug)]
 pub struct Biome {
     /// Determines whether or not the biome has precipitation
+    #[serde(deserialize_with = "bool_from_int")]
     has_precipitation: bool,
     /// The temperature factor of the biome.
     /// Affects foliage and grass color if they are not explicitly set.
     temperature: f32,
     /// Modifier that affects the resulting temperature.
-    temperature_modifier: Option<f32>,
+    temperature_modifier: Option<String>,
     /// The downfall factor of the biome.
     /// Affects foliage and grass color if they are not explicitly set.
     downfall: f32,

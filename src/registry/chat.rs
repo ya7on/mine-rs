@@ -1,5 +1,7 @@
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
 
+#[derive(Deserialize, Debug)]
 pub struct Decoration {
     /// The translation key representing the chat format. It can also be a formatting string directly.
     ///
@@ -14,20 +16,28 @@ pub struct Decoration {
     /// * `sender`, for the name of the player sending the message.
     /// * `target`, for the name of the player receiving the message, which may be empty.
     /// * `content`, for the actual message.
-    pub parameters: String,
+    pub parameters: Vec<String>,
 }
 
 impl IntoNBTTag for Decoration {
     fn to_nbt(self) -> Box<dyn NBTTag> {
         vec![
             ("translation_key", self.translation_key.to_nbt()),
-            ("parameters", self.parameters.to_nbt()),
+            (
+                "parameters",
+                self.parameters
+                    .iter()
+                    .map(|item| item.to_nbt())
+                    .collect::<Vec<Box<dyn NBTTag>>>()
+                    .to_nbt(),
+            ),
         ]
         .to_nbt()
     }
 }
 
 /// The `minecraft:chat_type` registry. It defines the different types of in-game chat and how they're formatted.
+#[derive(Deserialize, Debug)]
 pub struct Chat {
     /// The chat decoration.
     pub chat: Decoration,

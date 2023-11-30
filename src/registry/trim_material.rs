@@ -1,6 +1,9 @@
+use crate::registry::Description;
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
 
 /// The minecraft:trim_material registry. It defines various visual properties of trim materials in armors.
+#[derive(Deserialize, Debug)]
 pub struct ArmorTrimMaterial {
     /// The trim color model to be rendered on top of the armor.
     /// The Notchian client uses the corresponding asset located at trims/color_palettes.
@@ -21,7 +24,7 @@ pub struct ArmorTrimMaterial {
     // pub override_armor_materials: Option<_>
     /// The name of the trim material to be displayed on the armor tool-tip.
     /// Any styling used in this component is also applied to the trim pattern description.
-    pub description: String,
+    pub description: Description,
 }
 
 impl IntoNBTTag for ArmorTrimMaterial {

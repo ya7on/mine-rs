@@ -1,25 +1,56 @@
+use crate::registry::{bool_from_int, IntegerDistributionValue};
 use mclib::nbt::{IntoNBTTag, NBTTag};
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug)]
+#[serde(untagged)]
+pub enum MonsterSpawnLightLevel {
+    Int(i32),
+    Complex {
+        #[serde(rename = "type")]
+        ty: String,
+        value: IntegerDistributionValue,
+    },
+}
+
+impl IntoNBTTag for MonsterSpawnLightLevel {
+    fn to_nbt(self) -> Box<dyn NBTTag> {
+        match self {
+            MonsterSpawnLightLevel::Int(value) => value.to_nbt(),
+            MonsterSpawnLightLevel::Complex { ty, value } => {
+                vec![("type", ty.to_nbt()), ("value", value.to_nbt())].to_nbt()
+            }
+        }
+    }
+}
 
 /// The minecraft:dimension_type registry. It defines the types of dimension that can be attributed to a world, along with all their characteristics.
 /// Dimension type entries are referenced in the Login (play) and Respawn packets.
+#[derive(Deserialize, Debug)]
 pub struct DimensionType {
     /// If set, the time of the day fixed to the specified value.
     /// Allowed values vary between 0 and 24000.
     pub fixed_time: Option<i64>,
     /// Whether the dimension has skylight access or not.
+    #[serde(deserialize_with = "bool_from_int")]
     pub has_skylight: bool,
     /// Whether the dimension has a bedrock ceiling or not. When true, causes lava to spread faster.
+    #[serde(deserialize_with = "bool_from_int")]
     pub has_ceiling: bool,
     /// Whether the dimensions behaves like the nether (water evaporates and sponges dry) or not.
     /// Also causes lava to spread thinner.
+    #[serde(deserialize_with = "bool_from_int")]
     pub ultrawarm: bool,
     /// When false, compasses spin randomly. When true, nether portals can spawn zombified piglins.
+    #[serde(deserialize_with = "bool_from_int")]
     pub natural: bool,
     /// The multiplier applied to coordinates when traveling to the dimension.
     pub coordinate_scale: f64,
     /// Whether players can use a bed to sleep.
+    #[serde(deserialize_with = "bool_from_int")]
     pub bed_works: bool,
     /// Whether players can charge and use respawn anchors.
+    #[serde(deserialize_with = "bool_from_int")]
     pub respawn_anchor_works: bool,
     /// The minimum Y level.
     /// Allowed values vary between -2032 and 2031, and must also be a multiple of 16.
@@ -55,12 +86,14 @@ pub struct DimensionType {
     /// The default values are 0.0 and 0.1, 0.1 for the nether and 0.0 for the other dimensions.
     pub ambient_light: f32,
     /// Whether piglins shake and transform to zombified piglins.
+    #[serde(deserialize_with = "bool_from_int")]
     pub piglin_safe: bool,
     /// Whether players with the Bad Omen effect can cause a raid.
+    #[serde(deserialize_with = "bool_from_int")]
     pub has_raids: bool,
     /// During a monster spawn attempt, this is the maximum allowed light level for it to succeed.
     /// It can be either a fixed value, or one of several types of distributions.
-    pub monster_spawn_light_level: i32, // TODO
+    pub monster_spawn_light_level: MonsterSpawnLightLevel, // TODO
     /// Maximum allowed block light level monster spawn attempts to happen.
     ///
     /// Allowed values vary between 0 and 15.
