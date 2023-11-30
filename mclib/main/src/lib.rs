@@ -18,6 +18,7 @@ pub mod packets {
         };
         pub use mclib_protocol::packets::client::play::{DeathInfo, Play};
         pub use mclib_protocol::packets::client::registry_data::RegistryData;
+        pub use mclib_protocol::packets::client::set_default_spawn_position::SetDefaultSpawnPosition;
         pub use mclib_protocol::packets::client::status_response::StatusResponse;
         pub use mclib_protocol::packets::client::synchronize_player_position::SynchronizePlayerPosition;
     }
