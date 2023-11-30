@@ -4,6 +4,7 @@ pub use mclib_protocol::packets::base::MCPacket;
 pub use mclib_protocol::types::base::MCType;
 pub mod packets {
     pub mod server {
+        pub use mclib_protocol::packets::server::finish_configuration::FinishConfigurationServerbound;
         pub use mclib_protocol::packets::server::handshake::{Handshake, HandshakeNextState};
         pub use mclib_protocol::packets::server::login_acknowledged::LoginAcknowledged;
         pub use mclib_protocol::packets::server::login_start::LoginStart;
@@ -11,9 +12,11 @@ pub mod packets {
         pub use mclib_protocol::packets::server::status_request::StatusRequest;
     }
     pub mod client {
+        pub use mclib_protocol::packets::client::finish_configuration::FinishConfigurationClientbound;
         pub use mclib_protocol::packets::client::login_success::{
             LoginSuccess, LoginSuccessProperty,
         };
+        pub use mclib_protocol::packets::client::registry_data::RegistryData;
         pub use mclib_protocol::packets::client::status_response::StatusResponse;
     }
 }

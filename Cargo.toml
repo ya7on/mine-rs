@@ -23,6 +23,8 @@ clap = { version = "4.4.8", features = ["derive", "env"] }
 darling = { version = "0.20.3" }
 flate2 = { version = "1.0.28" }
 lazy_static = { version = "1.4.0" }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = { version = "1.0.108" }
 syn = { version = "2.0.39" }
 tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
@@ -33,6 +35,8 @@ mclib = { workspace = true }
 
 clap = { workspace = true }
 lazy_static = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }

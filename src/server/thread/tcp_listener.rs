@@ -1,12 +1,17 @@
 use crate::conf::conf;
+use crate::registry;
 use crate::server::communicator::WriteCommunicator;
 use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
-use mclib::packets::client::{LoginSuccess, StatusResponse};
-use mclib::packets::server::{
-    Handshake, HandshakeNextState, LoginAcknowledged, LoginStart, PingRequest, StatusRequest,
+use mclib::nbt::NBT;
+use mclib::packets::client::{
+    FinishConfigurationClientbound, LoginSuccess, RegistryData, StatusResponse,
 };
-use mclib::types::MCVarInt;
+use mclib::packets::server::{
+    FinishConfigurationServerbound, Handshake, HandshakeNextState, LoginAcknowledged, LoginStart,
+    PingRequest, StatusRequest,
+};
+use mclib::types::{MCVarInt, MCNBT};
 use mclib::MCPacket;
 
 pub struct TCPListenerThread {
@@ -80,8 +85,32 @@ impl TCPListenerThread {
     }
 
     pub fn handle_configuration(&mut self) {
-        todo!()
+        let registry_data = serde_json::from_str::<registry::RegistryData>(include_str!(
+            "../../../assets/registry_data_1.20.2.json"
+        ))
+        .unwrap();
+        let registry_data_nbt = NBT::from(registry_data);
+        let registry_data_packet = RegistryData {
+            registry_data: MCNBT::from(registry_data_nbt),
+        };
+        self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+            uid: self.uid,
+            body: registry_data_packet.pack(),
+        });
+
+        let finish_configuration = FinishConfigurationClientbound {};
+        self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+            uid: self.uid,
+            body: finish_configuration.pack(),
+        });
+
+        let _ = self
+            .tcp_read
+            .read_packet()
+            .parse_packet::<FinishConfigurationServerbound>();
     }
+
+    pub fn handle_play(&mut self) {}
 
     pub fn execute(&mut self) {
         match self.handle_handshake() {
@@ -91,6 +120,7 @@ impl TCPListenerThread {
             HandshakeNextState::Login => {
                 self.handle_login();
                 self.handle_configuration();
+                self.handle_play();
             }
             HandshakeNextState::Unknown => {
                 error!("Unknown next state for handshake");
