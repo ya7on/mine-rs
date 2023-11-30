@@ -1,8 +1,19 @@
-use crate::nbt::tags::base::NBTTag;
+use crate::nbt::tags::base::{unpack_by_ty_id, NBTTag};
+use crate::utils::TcpUtils;
+use std::io::Read;
 
 pub mod tags;
 
+#[derive(Debug)]
 pub struct NBT(pub Option<String>, pub Box<dyn NBTTag>);
+
+impl Clone for NBT {
+    // TODO
+    fn clone(&self) -> Self {
+        let bin = self.pack();
+        Self::unpack(&mut std::io::Cursor::new(bin), self.0.is_some())
+    }
+}
 
 impl NBT {
     pub fn pack(&self) -> Vec<u8> {
@@ -15,6 +26,22 @@ impl NBT {
         }
         result.extend(self.1.pack());
         result
+    }
+
+    pub fn unpack(src: &mut dyn Read, read_name: bool) -> Self {
+        let ty_id = src.read_byte();
+        let name = if read_name {
+            let name_length = i16::from_be_bytes([src.read_byte(), src.read_byte()]);
+            let mut name = Vec::new();
+            for _ in 0..name_length {
+                name.push(src.read_byte());
+            }
+            Some(String::from_utf8(name).unwrap())
+        } else {
+            None
+        };
+        let inner = unpack_by_ty_id(ty_id, src);
+        Self(name, inner)
     }
 }
 
@@ -129,8 +156,12 @@ mod tests {
         let mut decoder = flate2::read::GzDecoder::new(std::io::Cursor::new(result));
         let mut result = Vec::new();
         decoder.read_to_end(&mut result).unwrap();
-        let p = nbt.pack();
-        assert_eq!(p[..p.len() - 1], result[..p.len() - 1]);
+        assert_eq!(nbt.pack(), result);
+
+        assert_eq!(
+            NBT::unpack(&mut std::io::Cursor::new(result.clone()), true).pack(),
+            result
+        )
     }
 
     #[test]
