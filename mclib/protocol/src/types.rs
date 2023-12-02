@@ -2,6 +2,7 @@ pub mod base;
 pub mod bitset;
 pub mod boolean;
 pub mod byte;
+pub mod byte_array;
 pub mod double;
 pub mod float;
 pub mod int;
