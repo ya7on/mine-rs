@@ -28,6 +28,7 @@ pub mod types {
     pub use mclib_protocol::types::bitset::MCBitSet;
     pub use mclib_protocol::types::boolean::MCBoolean;
     pub use mclib_protocol::types::byte::MCByte;
+    pub use mclib_protocol::types::byte_array::MCByteArray;
     pub use mclib_protocol::types::double::MCDouble;
     pub use mclib_protocol::types::float::MCFloat;
     pub use mclib_protocol::types::int::MCInt;
