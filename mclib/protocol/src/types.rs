@@ -9,6 +9,7 @@ pub mod long;
 pub mod nbt;
 pub mod option;
 pub mod position;
+pub mod short;
 pub mod string;
 pub mod ubyte;
 pub mod ushort;
