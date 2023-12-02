@@ -1,4 +1,5 @@
 pub mod base;
+pub mod bitset;
 pub mod boolean;
 pub mod byte;
 pub mod double;
