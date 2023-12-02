@@ -9,6 +9,7 @@ pub mod packets {
         pub use mclib_protocol::packets::server::login_acknowledged::LoginAcknowledged;
         pub use mclib_protocol::packets::server::login_start::LoginStart;
         pub use mclib_protocol::packets::server::ping::PingRequest;
+        pub use mclib_protocol::packets::server::set_player_position::SetPlayerPosition;
         pub use mclib_protocol::packets::server::status_request::StatusRequest;
     }
     pub mod client {
