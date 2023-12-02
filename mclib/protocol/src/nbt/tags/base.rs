@@ -6,6 +6,7 @@ use crate::nbt::tags::float::TagFloat;
 use crate::nbt::tags::int::TagInt;
 use crate::nbt::tags::list::TagList;
 use crate::nbt::tags::long::TagLong;
+use crate::nbt::tags::long_array::TagLongArray;
 use crate::nbt::tags::short::TagShort;
 use crate::nbt::tags::string::TagString;
 use std::fmt::Debug;
@@ -38,9 +39,7 @@ pub fn unpack_by_ty_id(ty_id: u8, src: &mut dyn Read) -> Box<dyn NBTTag> {
         11 => {
             todo!()
         }
-        12 => {
-            todo!()
-        }
+        12 => Box::new(TagLongArray::unpack(src)),
         _ => {
             todo!()
         }

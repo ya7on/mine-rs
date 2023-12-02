@@ -51,6 +51,7 @@ pub mod nbt {
     pub use mclib_protocol::nbt::tags::int::TagInt;
     pub use mclib_protocol::nbt::tags::list::TagList;
     pub use mclib_protocol::nbt::tags::long::TagLong;
+    pub use mclib_protocol::nbt::tags::long_array::TagLongArray;
     pub use mclib_protocol::nbt::tags::short::TagShort;
     pub use mclib_protocol::nbt::tags::string::TagString;
     pub use mclib_protocol::nbt::NBT;
