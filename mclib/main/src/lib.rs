@@ -34,6 +34,7 @@ pub mod types {
     pub use mclib_protocol::types::long::MCLong;
     pub use mclib_protocol::types::nbt::MCNBT;
     pub use mclib_protocol::types::position::MCPosition;
+    pub use mclib_protocol::types::short::MCShort;
     pub use mclib_protocol::types::ubyte::MCUByte;
     pub use mclib_protocol::types::ushort::MCUShort;
     pub use mclib_protocol::types::uuid::MCUuid;
