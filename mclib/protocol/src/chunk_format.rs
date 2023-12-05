@@ -3,6 +3,7 @@ use crate::types::base::MCType;
 use crate::utils::TcpUtils;
 use std::io::Read;
 
+pub mod data_array;
 pub mod palleted_container;
 pub mod section;
 
