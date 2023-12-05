@@ -37,6 +37,7 @@ pub struct ChunkDataAndUpdateLight {
 
 #[cfg(test)]
 mod tests {
+    use crate::chunk_format::data_array::DataArray;
     use crate::chunk_format::palleted_container::PalletedContainer;
     use crate::chunk_format::section::ChunkSection;
     use crate::chunk_format::ChunkData;
@@ -45,6 +46,7 @@ mod tests {
     use crate::packets::base::MCPacket;
     use crate::packets::client::chunk_data_and_update_light::ChunkDataAndUpdateLight;
     use crate::types::byte_array::MCByteArray;
+    use crate::types::long::MCLong;
 
     #[test]
     #[ignore]
@@ -57,106 +59,32 @@ mod tests {
             vec![
                 (
                     "MOTION_BLOCKING",
-                    vec![
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        537921540i64,
-                    ]
-                    .to_nbt(),
+                    DataArray::from(vec![4; 256]).pack(9).to_nbt(),
                 ),
                 (
                     "WORLD_SURFACE",
-                    vec![
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        72198606942111748i64,
-                        537921540i64,
-                    ]
-                    .to_nbt(),
+                    DataArray::from(vec![4; 256]).pack(9).to_nbt(),
                 ),
             ]
             .to_nbt(),
         );
 
         let mut data = Vec::new();
-        data.extend(vec![1229782938247303441.into(); 16]);
-        data.extend(vec![2459565876494606882.into(); 32]);
-        data.extend(vec![3689348814741910323.into(); 16]);
-        data.extend(vec![0.into(); 192]);
+        data.extend(vec![1; 256]);
+        data.extend(vec![2; 512]);
+        data.extend(vec![3; 256]);
+        data.extend(vec![0; 3072]);
         let mut chunks = Vec::new();
         chunks.push(ChunkSection {
             block_count: 1024.into(),
             block_states: PalletedContainer::Indirect {
                 bits_per_entry: 4.into(),
                 pallete: vec![0.into(), 79.into(), 10.into(), 9.into()],
-                data,
+                data: DataArray::from(data)
+                    .pack(4)
+                    .iter()
+                    .map(|i| i.clone().into())
+                    .collect::<Vec<MCLong>>(),
             },
             biomes: PalletedContainer::SingleValued(39.into()),
         });
