@@ -57,7 +57,7 @@ impl<const INDIRECT_MAX_BITS: u8> MCType for PalletedContainer<INDIRECT_MAX_BITS
         if bits_per_entry == 0 {
             let value = MCVarInt::unpack(src);
             let _data_len = MCVarInt::unpack(src);
-            return Self::SingleValued(value);
+            Self::SingleValued(value)
         } else if <MCUByte as Into<u8>>::into(bits_per_entry.clone()) <= INDIRECT_MAX_BITS {
             let pallete_length = MCVarInt::unpack(src).into();
             let mut pallete = Vec::new();
@@ -69,23 +69,21 @@ impl<const INDIRECT_MAX_BITS: u8> MCType for PalletedContainer<INDIRECT_MAX_BITS
             for _ in 0..data_length {
                 data.push(MCLong::unpack(src));
             }
-            return Self::Indirect {
+            Self::Indirect {
                 bits_per_entry,
                 pallete,
                 data,
-            };
+            }
         } else {
             let mut data = Vec::new();
             let data_length = MCVarInt::unpack(src).into();
             for _ in 0..data_length {
                 data.push(MCLong::unpack(src));
             }
-            return Self::Direct {
+            Self::Direct {
                 bits_per_entry,
                 data,
-            };
+            }
         }
-
-        todo!()
     }
 }
