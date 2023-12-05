@@ -3,16 +3,18 @@ use crate::registry;
 use crate::server::communicator::WriteCommunicator;
 use crate::server::net::tcp::{NativeRead, TCPRead};
 use crate::server::thread::tcp_writer::TCPWriterAPI;
-use mclib::nbt::NBT;
+use mclib::chunk_format::{ChunkData, ChunkSection, PalletedContainer};
+use mclib::nbt::{IntoNBTTag, NBT};
 use mclib::packets::client::{
-    FinishConfigurationClientbound, LoginSuccess, Play, RegistryData, SetDefaultSpawnPosition,
-    StatusResponse, SynchronizePlayerPosition,
+    ChunkDataAndUpdateLight, ClientboundKeelAlivePlay, FinishConfigurationClientbound,
+    LoginSuccess, Play, RegistryData, SetDefaultSpawnPosition, StatusResponse,
+    SynchronizePlayerPosition,
 };
 use mclib::packets::server::{
     FinishConfigurationServerbound, Handshake, HandshakeNextState, LoginAcknowledged, LoginStart,
-    PingRequest, StatusRequest,
+    PingRequest, ServerboundKeelAlivePlay, SetPlayerPosition, StatusRequest,
 };
-use mclib::types::{MCPosition, MCVarInt};
+use mclib::types::{MCByteArray, MCPosition, MCVarInt};
 use mclib::MCPacket;
 
 pub struct TCPListenerThread {
@@ -117,17 +119,17 @@ impl TCPListenerThread {
             is_hardcore: false.into(),
             dimensions: vec![],
             max_players: 25.into(),
-            view_distance: 2.into(),
-            simulation_distance: 2.into(),
-            reduced_debug_info: true.into(),
+            view_distance: 32.into(),
+            simulation_distance: 32.into(),
+            reduced_debug_info: false.into(),
             enable_respawn_screen: true.into(),
             do_limited_crafting: true.into(),
             dimension_type: "minecraft:overworld".into(),
             dimension_name: "minecraft:overworld".into(),
             hashed_seed: 0.into(),
-            game_mode: 0.into(),
-            previous_game_mode: 0.into(),
-            is_debug: true.into(),
+            game_mode: 1.into(),
+            previous_game_mode: 1.into(),
+            is_debug: false.into(),
             is_flat: true.into(),
             death_info: None,
             portal_cooldown: 1.into(),
@@ -139,7 +141,7 @@ impl TCPListenerThread {
 
         let synchronize_player_position = SynchronizePlayerPosition {
             x: 0.0.into(),
-            y: 0.0.into(),
+            y: 100.0.into(),
             z: 0.0.into(),
             yaw: 0.0.into(),
             pitch: 0.0.into(),
@@ -152,13 +154,193 @@ impl TCPListenerThread {
         });
 
         let set_default_spawn_position = SetDefaultSpawnPosition {
-            location: MCPosition { x: 0, y: 0, z: 0 },
+            location: MCPosition { x: 0, y: 100, z: 0 },
             angle: 0.0.into(),
         };
         self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
             uid: self.uid,
             body: set_default_spawn_position.pack(),
         });
+
+        for x in -3..3 {
+            for z in -3..3 {
+                let heightmap = NBT(
+                    None,
+                    vec![
+                        (
+                            "MOTION_BLOCKING",
+                            vec![
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                537921540i64,
+                            ]
+                            .to_nbt(),
+                        ),
+                        (
+                            "WORLD_SURFACE",
+                            vec![
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                72198606942111748i64,
+                                537921540i64,
+                            ]
+                            .to_nbt(),
+                        ),
+                    ]
+                    .to_nbt(),
+                );
+
+                let mut data = Vec::new();
+                data.extend(vec![1229782938247303441.into(); 16]);
+                data.extend(vec![2459565876494606882.into(); 32]);
+                data.extend(vec![3689348814741910323.into(); 16]);
+                data.extend(vec![0.into(); 192]);
+                let mut chunks = Vec::new();
+                chunks.push(ChunkSection {
+                    block_count: 1024.into(),
+                    block_states: PalletedContainer::Indirect {
+                        bits_per_entry: 4.into(),
+                        pallete: vec![0.into(), 79.into(), 10.into(), 9.into()],
+                        data,
+                    },
+                    biomes: PalletedContainer::SingleValued(39.into()),
+                });
+                chunks.extend(vec![
+                    ChunkSection {
+                        block_count: 0.into(),
+                        block_states: PalletedContainer::SingleValued(0.into()),
+                        biomes: PalletedContainer::SingleValued(39.into()),
+                    };
+                    23
+                ]);
+                let chunk_data_and_update_light = ChunkDataAndUpdateLight {
+                    chunk_x: x.into(),
+                    chunk_z: z.into(),
+                    heightmaps: heightmap.into(),
+                    data: MCByteArray::new(ChunkData(chunks)),
+                    block_entities: vec![],
+                    sky_light_mask: Default::default(),
+                    block_light_mask: Default::default(),
+                    empty_sky_light_mask: Default::default(),
+                    empty_block_light_mask: Default::default(),
+                    sky_lights: vec![],
+                    block_lights: vec![],
+                };
+                self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+                    uid: self.uid,
+                    body: chunk_data_and_update_light.pack(),
+                });
+            }
+        }
+
+        let keepalive = ClientboundKeelAlivePlay {
+            keepalive_id: 14.into(),
+        };
+        self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+            uid: self.uid,
+            body: keepalive.pack(),
+        });
+
+        loop {
+            let mut packet = self.tcp_read.read_packet();
+
+            match packet.id {
+                0x16 => {
+                    println!("{:?}", packet.parse_packet::<SetPlayerPosition>());
+
+                    let keepalive = ClientboundKeelAlivePlay {
+                        keepalive_id: 14.into(),
+                    };
+                    self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+                        uid: self.uid,
+                        body: keepalive.pack(),
+                    });
+                }
+                0x14 => {
+                    let keepalive_id: i64 = packet
+                        .parse_packet::<ServerboundKeelAlivePlay>()
+                        .keepalive_id
+                        .into();
+                    println!("{:?}", keepalive_id);
+
+                    let keepalive = ClientboundKeelAlivePlay {
+                        keepalive_id: (keepalive_id + 1).into(),
+                    };
+                    self.tcp_writer_api.send(TCPWriterAPI::SendMessageRaw {
+                        uid: self.uid,
+                        body: keepalive.pack(),
+                    });
+                }
+                _ => {}
+            }
+        }
     }
 
     pub fn execute(&mut self) {
