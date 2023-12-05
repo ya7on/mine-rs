@@ -61,6 +61,7 @@ pub mod nbt {
 }
 pub mod chunk_format {
     pub use mclib_protocol::chunk_format::{
-        palleted_container::PalletedContainer, section::ChunkSection, ChunkData,
+        data_array::DataArray, palleted_container::PalletedContainer, section::ChunkSection,
+        ChunkData,
     };
 }
