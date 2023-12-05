@@ -7,5 +7,6 @@ pub mod float;
 pub mod int;
 pub mod list;
 pub mod long;
+pub mod long_array;
 pub mod short;
 pub mod string;
