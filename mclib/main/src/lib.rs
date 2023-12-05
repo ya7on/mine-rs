@@ -6,6 +6,7 @@ pub mod packets {
     pub mod server {
         pub use mclib_protocol::packets::server::finish_configuration::FinishConfigurationServerbound;
         pub use mclib_protocol::packets::server::handshake::{Handshake, HandshakeNextState};
+        pub use mclib_protocol::packets::server::keepalive::ServerboundKeelAlivePlay;
         pub use mclib_protocol::packets::server::login_acknowledged::LoginAcknowledged;
         pub use mclib_protocol::packets::server::login_start::LoginStart;
         pub use mclib_protocol::packets::server::ping::PingRequest;
@@ -14,6 +15,7 @@ pub mod packets {
     }
     pub mod client {
         pub use mclib_protocol::packets::client::finish_configuration::FinishConfigurationClientbound;
+        pub use mclib_protocol::packets::client::keepalive::ClientboundKeelAlivePlay;
         pub use mclib_protocol::packets::client::login_success::{
             LoginSuccess, LoginSuccessProperty,
         };
