@@ -14,13 +14,13 @@ pub mod packets {
         pub use mclib_protocol::packets::server::status_request::StatusRequest;
     }
     pub mod client {
+        pub use mclib_protocol::packets::client::chunk_data_and_update_light::ChunkDataAndUpdateLight;
         pub use mclib_protocol::packets::client::finish_configuration::FinishConfigurationClientbound;
         pub use mclib_protocol::packets::client::keepalive::ClientboundKeelAlivePlay;
         pub use mclib_protocol::packets::client::login_success::{
             LoginSuccess, LoginSuccessProperty,
         };
         pub use mclib_protocol::packets::client::play::{DeathInfo, Play};
-        pub use mclib_protocol::packets::client::player_abilities::PlayerAbilities;
         pub use mclib_protocol::packets::client::registry_data::RegistryData;
         pub use mclib_protocol::packets::client::set_default_spawn_position::SetDefaultSpawnPosition;
         pub use mclib_protocol::packets::client::status_response::StatusResponse;
