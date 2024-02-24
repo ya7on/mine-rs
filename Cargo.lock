@@ -236,8 +236,6 @@ dependencies = [
 [[package]]
 name = "mclib"
 version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0479c15bc6c0d85472058b5720102bde26d47a6cb545824aa11ab7e9c6242529"
 dependencies = [
  "flate2",
  "mclib-macros",
@@ -247,8 +245,6 @@ dependencies = [
 [[package]]
 name = "mclib-macros"
 version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a1ededff606435e5616b64235d45753713c35cd0fb19e33596559030319e1ae"
 dependencies = [
  "darling",
  "syn",

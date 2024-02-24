@@ -7,7 +7,7 @@ authors = ["S. Suprun <hello@syoma.website>"]
 publish = false
 
 [dependencies]
-mclib = { version = "0.0.1" }
+mclib = { path = "mclib", version = "0.0.1" }
 
 clap = { version = "4.4.8", features = ["derive", "env"] }
 lazy_static = { version = "1.4.0" }
