@@ -1,0 +1,8 @@
+[package]
+name = "mclib"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+
