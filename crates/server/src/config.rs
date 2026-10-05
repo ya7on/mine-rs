@@ -12,12 +12,13 @@ pub struct Cli {
     #[arg(long, default_value_t = 25_565)]
     pub port: u16,
 
-    /// JSON document returned to status requests.
-    #[arg(
-        long,
-        default_value = r#"{"version":{"name":"mine-rs","protocol":777},"players":{"max":0,"online":0},"description":{"text":"mine-rs status server"}}"#
-    )]
-    pub status_json: String,
+    /// Server description shown to clients in the server list.
+    #[arg(long, default_value = "mine-rs status server")]
+    pub motd: String,
+
+    /// Maximum number of players reported in the status response.
+    #[arg(long, default_value_t = 0)]
+    pub max_players: u32,
 }
 
 impl Cli {
@@ -29,16 +30,26 @@ impl Cli {
 
         Ok(Config {
             addr,
-            status_json: self.status_json.clone(),
+            status: StatusConfig {
+                motd: self.motd.clone(),
+                max_players: self.max_players,
+            },
         })
     }
+}
+
+/// Settings reported to clients in the status response.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatusConfig {
+    pub motd: String,
+    pub max_players: u32,
 }
 
 /// Runtime settings for the status server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Config {
     pub addr: std::net::SocketAddr,
-    pub status_json: String,
+    pub status: StatusConfig,
 }
 
 #[cfg(test)]
@@ -49,7 +60,28 @@ mod tests {
     fn parses_the_default_configuration() {
         let cli = Cli::parse_from(["server"]);
 
-        assert_eq!(cli.config().unwrap().addr.to_string(), "0.0.0.0:25565");
+        let config = cli.config().unwrap();
+        assert_eq!(config.addr.to_string(), "0.0.0.0:25565");
+        assert_eq!(
+            config.status,
+            StatusConfig {
+                motd: "mine-rs status server".to_owned(),
+                max_players: 0,
+            }
+        );
+    }
+
+    #[test]
+    fn parses_custom_status_settings() {
+        let cli = Cli::parse_from(["server", "--motd", "hello world", "--max-players", "42"]);
+
+        assert_eq!(
+            cli.config().unwrap().status,
+            StatusConfig {
+                motd: "hello world".to_owned(),
+                max_players: 42,
+            }
+        );
     }
 
     #[test]

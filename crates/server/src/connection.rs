@@ -7,9 +7,18 @@ use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::status::clientbound::{PongResponse, StatusResponse};
 use mclib::packets::status::serverbound::{PingRequest, StatusRequest};
 use mclib::types::{MCType, ProtocolError};
+use serde_json::json;
+
+use crate::config::StatusConfig;
 
 /// How long to wait for the next packet before dropping the connection.
 const READ_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// The protocol version this server speaks, reported in status responses.
+const PROTOCOL_VERSION: i32 = 777;
+
+/// The human-readable name of this server implementation.
+const PROTOCOL_NAME: &str = "mine-rs";
 
 /// Errors that end a status connection.
 ///
@@ -82,19 +91,19 @@ pub struct Connection {
     reader: BufReader<TcpStream>,
     stream: TcpStream,
     state: State,
-    status_json: String,
+    status: StatusConfig,
 }
 
 impl Connection {
     /// Prepares a connection handler for an already accepted stream.
-    pub fn new(stream: TcpStream, status_json: String) -> Result<Self, ConnectionError> {
+    pub fn new(stream: TcpStream, status: StatusConfig) -> Result<Self, ConnectionError> {
         stream.set_read_timeout(Some(READ_TIMEOUT))?;
         let stream_for_writing = stream.try_clone()?;
         Ok(Self {
             reader: BufReader::new(stream),
             stream: stream_for_writing,
             state: State::Handshaking,
-            status_json,
+            status,
         })
     }
 
@@ -142,10 +151,24 @@ impl Connection {
         }
 
         StatusRequest::unpack(&mut Cursor::new(frame.body))?;
+        let json_response = json!({
+            "version": {
+                "name": PROTOCOL_NAME,
+                "protocol": PROTOCOL_VERSION,
+            },
+            "players": {
+                "max": self.status.max_players,
+                "online": 0,
+            },
+            "description": {
+                "text": self.status.motd,
+            },
+        })
+        .to_string();
         self.write_frame(
             0,
             StatusResponse {
-                json_response: self.status_json.as_str().into(),
+                json_response: json_response.as_str().into(),
             }
             .pack()?,
         )?;

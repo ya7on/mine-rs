@@ -7,23 +7,32 @@ use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::status::clientbound::{PongResponse, StatusResponse};
 use mclib::packets::status::serverbound::{PingRequest, StatusRequest};
 use mclib::types::{MCLong, MCType};
+use serde_json::Value;
+use server::config::StatusConfig;
 use server::connection::Connection;
 
-const STATUS_JSON: &str = r#"{"version":{"name":"mine-rs","protocol":777}}"#;
+const STATUS: StatusConfig = StatusConfig {
+    motd: String::new(),
+    max_players: 0,
+};
 
-/// Accepts one connection and serves it with a test status document.
+/// Accepts one connection and serves it with the test status settings.
 struct TestServer {
     address: std::net::SocketAddr,
 }
 
 impl TestServer {
     fn start() -> Self {
+        Self::with_status(STATUS.clone())
+    }
+
+    fn with_status(status: StatusConfig) -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
 
         thread::spawn(move || {
             let (stream, _) = listener.accept().unwrap();
-            let mut connection = Connection::new(stream, STATUS_JSON.to_owned()).unwrap();
+            let mut connection = Connection::new(stream, status).unwrap();
             let _ = connection.run();
         });
 
@@ -94,8 +103,11 @@ fn completes_the_full_status_exchange() {
         read_reply(&mut stream).unwrap().unwrap().body,
     ))
     .unwrap();
-    assert_eq!(status.json_response.as_ref(), STATUS_JSON);
-
+    let status: Value =
+        serde_json::from_str(status.json_response.as_ref()).expect("status is valid JSON");
+    assert_eq!(status["version"]["protocol"], 777);
+    assert_eq!(status["version"]["name"], "mine-rs");
+    assert_eq!(status["players"]["online"], 0);
     send(&mut stream, &ping_request_frame(1_234)).unwrap();
     let pong = PongResponse::unpack(&mut Cursor::new(
         read_reply(&mut stream).unwrap().unwrap().body,
@@ -104,6 +116,25 @@ fn completes_the_full_status_exchange() {
     assert_eq!(pong.timestamp, MCLong(1_234));
 
     read_closes(&mut stream);
+}
+
+#[test]
+fn reports_the_configured_status_settings() {
+    let server = TestServer::with_status(StatusConfig {
+        motd: "test motd".to_owned(),
+        max_players: 42,
+    });
+    let mut stream = server.connect();
+
+    send(&mut stream, &handshake_frame()).unwrap();
+    send(&mut stream, &status_request_frame()).unwrap();
+    let reply = read_reply(&mut stream).unwrap().unwrap();
+    let status = StatusResponse::unpack(&mut Cursor::new(reply.body)).unwrap();
+    let document: Value =
+        serde_json::from_str(status.json_response.as_ref()).expect("status is valid JSON");
+
+    assert_eq!(document["description"]["text"], "test motd");
+    assert_eq!(document["players"]["max"], 42);
 }
 
 #[test]
