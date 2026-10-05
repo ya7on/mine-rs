@@ -6,8 +6,9 @@ packets have individual source files, and packet fields use explicit Minecraft
 types such as `MCString` and `MCLong`.
 
 Packet bodies live under `mclib::packets` and are grouped by protocol state,
-then by direction when a state contains packets in both directions. Currently,
-only the `status` state is implemented.
+then by direction when a state contains packets in both directions. The
+`handshaking` state implements the serverbound `Handshake` packet, and the
+`status` state is documented below.
 
 Packets implement `MCType`, so `pack()` and `unpack()` operate on their fields in
 protocol order. For packets these methods process the body only. Transport
@@ -33,6 +34,10 @@ The status module implements the four protocol-777 status bodies documented in
 
 - clientbound `StatusResponse` and `PongResponse`;
 - serverbound `StatusRequest` and `PingRequest`.
+
+The handshaking module implements the serverbound `Handshake` packet
+(protocol version, server address, port, and intent enum), letting a caller
+select the target protocol state.
 
 Status strings enforce the protocol's 32,767-character limit and the related
 UTF-8 byte limit. Long timestamps use Minecraft's signed, big-endian 64-bit
