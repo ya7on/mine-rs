@@ -72,7 +72,7 @@ async fn closes(stream: &mut TcpStream) {
 }
 
 #[tokio::test]
-async fn completes_login_and_minimal_configuration() {
+async fn completes_login_and_vanilla_configuration() {
     let mut stream = connect(777).await;
     start(&mut stream, "Notch").await;
     let frame = reply(&mut stream).await;
@@ -142,7 +142,12 @@ async fn completes_login_and_minimal_configuration() {
                     has_overworld = true;
                 }
                 if data.registry_id.as_ref() == "minecraft:worldgen/biome" {
-                    assert_eq!(data.entries.0[0].id.as_ref(), "minecraft:the_void");
+                    assert!(
+                        data.entries
+                            .0
+                            .iter()
+                            .any(|entry| entry.id.as_ref() == "minecraft:the_void")
+                    );
                     has_void = true;
                 }
             }
@@ -150,24 +155,45 @@ async fn completes_login_and_minimal_configuration() {
             // Protocol 777: 0x0E is Update Tags; 0x0C is Transfer.
             14 => {
                 let tags = UpdateTags::unpack(&mut frame.body.as_slice()).unwrap();
-                assert_eq!(tags.registries.0[0].tags.0[0].entries.0, vec![0.into()]);
-                let block_tags = &tags.registries.0[1];
-                assert_eq!(block_tags.registry_id.as_ref(), "minecraft:block");
+                assert_eq!(tags.registries.0.len(), 15);
                 assert_eq!(
-                    block_tags.tags.0[0].name.as_ref(),
-                    "minecraft:infiniburn_overworld"
+                    tags.registries
+                        .0
+                        .iter()
+                        .map(|registry| registry.tags.0.len())
+                        .sum::<usize>(),
+                    773
                 );
-                assert!(block_tags.tags.0[0].entries.0.is_empty());
-                let damage_tags = &tags.registries.0[2];
-                assert_eq!(damage_tags.registry_id.as_ref(), "minecraft:damage_type");
-                assert_eq!(damage_tags.tags.0[0].name.as_ref(), "minecraft:is_fire");
-                assert!(damage_tags.tags.0[0].entries.0.is_empty());
-                assert_eq!(damage_tags.tags.0.len(), 3);
-                assert_eq!(
-                    tags.registries.0[3].registry_id.as_ref(),
-                    "minecraft:banner_pattern"
+                let registry = |id: &str| {
+                    tags.registries
+                        .0
+                        .iter()
+                        .find(|registry| registry.registry_id.as_ref() == id)
+                        .unwrap()
+                };
+                let block_tags = registry("minecraft:block");
+                let infiniburn = block_tags
+                    .tags
+                    .0
+                    .iter()
+                    .find(|tag| tag.name.as_ref() == "minecraft:infiniburn_overworld")
+                    .unwrap();
+                // Official 26.3 Registry Dump: netherrack's block ID is 334.
+                assert_eq!(infiniburn.entries.0, vec![334.into(), 729.into()]);
+                let damage_tags = registry("minecraft:damage_type");
+                assert!(
+                    damage_tags
+                        .tags
+                        .0
+                        .iter()
+                        .find(|tag| tag.name.as_ref() == "minecraft:is_fire")
+                        .unwrap()
+                        .entries
+                        .0
+                        .len()
+                        > 1
                 );
-                assert_eq!(tags.registries.0[3].tags.0.len(), 10);
+                assert_eq!(registry("minecraft:banner_pattern").tags.0.len(), 11);
                 has_tags = true;
             }
             3 => {
@@ -178,14 +204,14 @@ async fn completes_login_and_minimal_configuration() {
         }
     }
     assert_eq!(registries, 32);
-    assert_eq!(entries, 75);
+    assert_eq!(entries, 432);
     assert_eq!(item_registries["minecraft:trim_material"].len(), 11);
     assert!(item_registries["minecraft:trim_material"].contains(&"minecraft:redstone".to_owned()));
     assert_eq!(item_registries["minecraft:jukebox_song"].len(), 22);
     assert_eq!(item_registries["minecraft:decorated_pot_pattern"].len(), 23);
-    assert_eq!(
-        item_registries["minecraft:instrument"],
-        ["minecraft:ponder_goat_horn"]
+    assert_eq!(item_registries["minecraft:instrument"].len(), 8);
+    assert!(
+        item_registries["minecraft:instrument"].contains(&"minecraft:ponder_goat_horn".to_owned())
     );
     assert!(has_overworld && has_void);
     assert!(has_tags);

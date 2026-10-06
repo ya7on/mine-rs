@@ -1,57 +1,53 @@
-# Minimal Configuration experiment
+# Vanilla Configuration registries
 
-This server targets the vanilla 26.3 client (protocol 777). Registry values
-are sourced from the client's `minecraft:core` pack after an exact Known
-Packs match. There is no fallback to inline NBT for other pack versions.
+The server targets vanilla 26.3 (protocol 777). It sends all 32 synchronized
+registries, containing 432 entries, and 773 fully resolved tags across 15
+registries. Tags contain vanilla members instead of empty placeholders.
 
-`crates/server/data/registries-777.json` is a fixed experiment, not a full
-vanilla registry database. It lists 32 synchronized registries and 75
-selected entries. All other registries are sent with empty entry lists.
-The original single-entry registries retain numeric ID zero; item-related
-registries use the listed order for their additional entries.
-Future Play packets must respect these IDs, not vanilla ordering.
+Registry values are sourced from the client's `minecraft:core` pack after an
+exact Known Packs match. Registry Data omits inline NBT. A different pack
+selection receives a Configuration Disconnect; there is no inline fallback.
 
-The selected biome is `the_void`, the dimension is `overworld`, the damage
-type is `generic`. Default animal/sound variants and a painting are retained
-because the client requires nonempty variant registries even without entity
-gameplay. Variants use unconditional spawn rules rather than references to
-omitted biomes. The overworld dimension references the overworld clock and
-the `in_overworld` timeline tag; these are supplied with the day timeline.
-It also references the static block tag `infiniburn_overworld`. This tag
-is supplied with an empty entry list: the client requires the tag's presence
-to decode the dimension, while infinite-burning block behavior is outside
-this connection-only experiment. No vanilla block numeric IDs are assumed.
-Client item component initialization additionally requires the damage-type
-tag `is_fire`. It is supplied empty: our sole damage type `generic` is not
-fire damage. This dependency exists even without item or damage gameplay.
-Inspection of the official client's `Items` class exposed further direct
-dependencies during item component initialization: all 11 trim materials,
-22 jukebox songs, 23 decorated pot patterns and `ponder_goat_horn`.
-These are included even though items cannot be used on this server. The
-`bypasses_shield` and `is_explosion` damage tags and ten `pattern_item/*`
-banner tags are supplied empty, matching the absence of their gameplay data.
-This setup does not describe playable world content or create chunks.
+Dynamic IDs follow the entry order in `registries-777.json`. Dynamic tags use
+this same order. Static IDs (blocks, items, etc.) come from the official server
+registry report. Future Play packets must respect these dynamic IDs rather
+than assume vanilla ordering. Nested tags are expanded and deduplicated;
+missing mandatory references and cycles fail export. Optional missing
+references are skipped.
 
-Source: Mojang's official 26.3 client archive, SHA-1
-`e877b6a07acd633fb3bb475002175cec036e7b87`, whose `version.json` declares
-protocol 777. Registry names come from `RegistryDataLoader`'s
-`SYNCHRONIZED_REGISTRIES`; entry identifiers and dependencies were checked
-against the archive's vanilla JSON data. The archive is not vendored.
+## Sources and reproduction
 
-Configuration tolerates Client Information and plugin payloads between
-required responses. It sends registry listings, vanilla Feature Flags,
-the timeline Update Tags, and Finish Configuration, then waits for an
-empty acknowledgement. The coordinator closes at the Play boundary until
-Play is implemented. An unmatched core pack receives a Configuration
-Disconnect using network NBT.
+Inputs are Mojang's official 26.3 client archive, SHA-1
+`e877b6a07acd633fb3bb475002175cec036e7b87`, and the registry report generated
+from the official server archive, SHA-1
+`33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c`. Registry names come from
+`RegistryDataLoader.SYNCHRONIZED_REGISTRIES`. Archives are not vendored.
 
-For protocol 777, clientbound Update Tags is `0x0E`; `0x0C` is Transfer.
-After receiving Finish Configuration acknowledgement, the server logs
-`Configuration acknowledged by client`. A vanilla client reaching this
-message proves it accepted Configuration, even though Play is not implemented.
+Generate the report in a temporary directory using Java 25:
 
-Loopback integration tests prove the wire sequence, registry counts,
-omitted NBT, tag ID and rejection path. They do **not** prove that the
-vanilla client accepts this reduced set. That requires a real 26.3 client
-run, which has not been performed. Required tags or entries may need to be
-added after that check. Do not call this set a proven protocol minimum.
+```sh
+java -DbundlerMainClass=net.minecraft.data.Main -jar /path/to/server.jar --reports --output /path/to/generated
+```
+
+Regenerate the checked-in data from the repository root:
+
+```sh
+python3 tools/export_registries.py --client /path/to/client.jar --registry-report /path/to/generated/reports/registries.json --output crates/server/data
+```
+
+The exporter verifies the client version, protocol and checksum, and pins the
+report's SHA-256. It performs no downloads or server startup. Generated data
+contains identifiers and tag membership, not registry NBT.
+
+## Lifecycle and verification
+
+Configuration tolerates Client Information and plugin payloads between required
+responses. It sends registry listings, vanilla Feature Flags, Update Tags
+(`0x0E` for protocol 777), and Finish Configuration, then waits for an empty
+acknowledgement. The coordinator currently closes at the Play boundary.
+
+Loopback integration tests verify the wire sequence, dataset counts, omitted
+NBT, representative vanilla tag membership and pack rejection. They do not
+execute the vanilla client's registry loader. A real 26.3 client reaching
+`Configuration acknowledged by client` confirms acceptance of Configuration;
+this revised full dataset still requires that check. Play is not implemented.

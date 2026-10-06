@@ -10,7 +10,7 @@ use mclib::{MCString, MCType, PacketFrame, ProtocolError};
 use crate::ConnectionError;
 use crate::connection::Connection;
 
-/// Negotiates a fixed, minimal vanilla registry set for the 26.3 client.
+/// Negotiates a complete vanilla registry set for the 26.3 client.
 pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
     let known = KnownPacks {
         packs: vec![KnownPack {
@@ -44,7 +44,7 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
     let registries: BTreeMap<String, Vec<String>> =
         serde_json::from_str(include_str!("../../data/registries-777.json"))
             .map_err(|_| ProtocolError::InvalidData)?;
-    // Registry entry order fixes numeric IDs; single-entry registries use ID 0.
+    // Registry entry order fixes numeric IDs used by the exported dynamic tags.
     for (id, entries) in registries {
         connection
             .write_frame(
@@ -65,8 +65,6 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
             .await?;
     }
 
-    // The overworld references both a timeline tag and a static block tag.
-    // No burning behavior is implemented, so the block tag is intentionally empty.
     connection
         .write_frame(
             13,
@@ -76,7 +74,7 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
             .pack()?,
         )
         .await?;
-    connection.write_frame(14, required_tags().pack()?).await?;
+    connection.write_frame(14, vanilla_tags()?.pack()?).await?;
     connection
         .write_frame(3, FinishConfiguration.pack()?)
         .await?;
@@ -123,66 +121,30 @@ async fn receive(
     }
 }
 
-// Tags required by the selected dimension and client item initialization.
-fn required_tags() -> UpdateTags {
-    UpdateTags {
-        registries: vec![
-            RegistryTags {
-                registry_id: "minecraft:timeline".into(),
-                tags: vec![Tag {
-                    name: "minecraft:in_overworld".into(),
-                    entries: vec![0.into()].into(),
-                }]
-                .into(),
-            },
-            RegistryTags {
-                registry_id: "minecraft:block".into(),
-                tags: vec![Tag {
-                    name: "minecraft:infiniburn_overworld".into(),
-                    entries: Vec::new().into(),
-                }]
-                .into(),
-            },
-            // Client item component initialization resolves this tag
-            // even though no damage or item gameplay is implemented.
-            empty_tags(
-                "minecraft:damage_type",
-                &[
-                    "minecraft:is_fire",
-                    "minecraft:bypasses_shield",
-                    "minecraft:is_explosion",
-                ],
-            ),
-            empty_tags(
-                "minecraft:banner_pattern",
-                &[
-                    "minecraft:pattern_item/bordure_indented",
-                    "minecraft:pattern_item/field_masoned",
-                    "minecraft:pattern_item/guster",
-                    "minecraft:pattern_item/flow",
-                    "minecraft:pattern_item/piglin",
-                    "minecraft:pattern_item/globe",
-                    "minecraft:pattern_item/mojang",
-                    "minecraft:pattern_item/skull",
-                    "minecraft:pattern_item/creeper",
-                    "minecraft:pattern_item/flower",
-                ],
-            ),
-        ]
-        .into(),
-    }
-}
-
-fn empty_tags(registry_id: &str, names: &[&str]) -> RegistryTags {
-    RegistryTags {
-        registry_id: registry_id.into(),
-        tags: names
-            .iter()
-            .map(|name| Tag {
-                name: (*name).into(),
-                entries: Vec::new().into(),
+// Dynamic IDs match our Registry Data order; static IDs come from Mojang's report.
+fn vanilla_tags() -> Result<UpdateTags, ProtocolError> {
+    let data: BTreeMap<String, BTreeMap<String, Vec<i32>>> =
+        serde_json::from_str(include_str!("../../data/tags-777.json"))
+            .map_err(|_| ProtocolError::InvalidData)?;
+    Ok(UpdateTags {
+        registries: data
+            .into_iter()
+            .map(|(registry_id, tags)| RegistryTags {
+                registry_id: registry_id.into(),
+                tags: tags
+                    .into_iter()
+                    .map(|(name, entries)| Tag {
+                        name: name.into(),
+                        entries: entries
+                            .into_iter()
+                            .map(Into::into)
+                            .collect::<Vec<_>>()
+                            .into(),
+                    })
+                    .collect::<Vec<_>>()
+                    .into(),
             })
             .collect::<Vec<_>>()
             .into(),
-    }
+    })
 }
