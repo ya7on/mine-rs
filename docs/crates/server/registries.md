@@ -5,9 +5,10 @@ are sourced from the client's `minecraft:core` pack after an exact Known
 Packs match. There is no fallback to inline NBT for other pack versions.
 
 `crates/server/data/registries-777.json` is a fixed experiment, not a full
-vanilla registry database. It lists 32 synchronized registries and 18
+vanilla registry database. It lists 32 synchronized registries and 75
 selected entries. All other registries are sent with empty entry lists.
-Each nonempty registry contains one entry, so its numeric ID is zero.
+The original single-entry registries retain numeric ID zero; item-related
+registries use the listed order for their additional entries.
 Future Play packets must respect these IDs, not vanilla ordering.
 
 The selected biome is `the_void`, the dimension is `overworld`, the damage
@@ -23,6 +24,12 @@ this connection-only experiment. No vanilla block numeric IDs are assumed.
 Client item component initialization additionally requires the damage-type
 tag `is_fire`. It is supplied empty: our sole damage type `generic` is not
 fire damage. This dependency exists even without item or damage gameplay.
+Inspection of the official client's `Items` class exposed further direct
+dependencies during item component initialization: all 11 trim materials,
+22 jukebox songs, 23 decorated pot patterns and `ponder_goat_horn`.
+These are included even though items cannot be used on this server. The
+`bypasses_shield` and `is_explosion` damage tags and ten `pattern_item/*`
+banner tags are supplied empty, matching the absence of their gameplay data.
 This setup does not describe playable world content or create chunks.
 
 Source: Mojang's official 26.3 client archive, SHA-1

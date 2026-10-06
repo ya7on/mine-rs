@@ -111,6 +111,7 @@ async fn completes_login_and_minimal_configuration() {
     let mut has_overworld = false;
     let mut has_void = false;
     let mut has_tags = false;
+    let mut item_registries = std::collections::BTreeMap::new();
     loop {
         let frame = reply(&mut stream).await;
         match frame.packet_id.0 {
@@ -118,6 +119,23 @@ async fn completes_login_and_minimal_configuration() {
                 let data = RegistryData::unpack(&mut frame.body.as_slice()).unwrap();
                 registries += 1;
                 entries += data.entries.0.len();
+                if [
+                    "minecraft:trim_material",
+                    "minecraft:jukebox_song",
+                    "minecraft:decorated_pot_pattern",
+                    "minecraft:instrument",
+                ]
+                .contains(&data.registry_id.as_ref())
+                {
+                    item_registries.insert(
+                        data.registry_id.0.clone(),
+                        data.entries
+                            .0
+                            .iter()
+                            .map(|entry| entry.id.0.clone())
+                            .collect::<Vec<_>>(),
+                    );
+                }
                 assert!(data.entries.0.iter().all(|entry| entry.data.is_none()));
                 if data.registry_id.as_ref() == "minecraft:dimension_type" {
                     assert_eq!(data.entries.0[0].id.as_ref(), "minecraft:overworld");
@@ -144,6 +162,12 @@ async fn completes_login_and_minimal_configuration() {
                 assert_eq!(damage_tags.registry_id.as_ref(), "minecraft:damage_type");
                 assert_eq!(damage_tags.tags.0[0].name.as_ref(), "minecraft:is_fire");
                 assert!(damage_tags.tags.0[0].entries.0.is_empty());
+                assert_eq!(damage_tags.tags.0.len(), 3);
+                assert_eq!(
+                    tags.registries.0[3].registry_id.as_ref(),
+                    "minecraft:banner_pattern"
+                );
+                assert_eq!(tags.registries.0[3].tags.0.len(), 10);
                 has_tags = true;
             }
             3 => {
@@ -154,7 +178,15 @@ async fn completes_login_and_minimal_configuration() {
         }
     }
     assert_eq!(registries, 32);
-    assert_eq!(entries, 18);
+    assert_eq!(entries, 75);
+    assert_eq!(item_registries["minecraft:trim_material"].len(), 11);
+    assert!(item_registries["minecraft:trim_material"].contains(&"minecraft:redstone".to_owned()));
+    assert_eq!(item_registries["minecraft:jukebox_song"].len(), 22);
+    assert_eq!(item_registries["minecraft:decorated_pot_pattern"].len(), 23);
+    assert_eq!(
+        item_registries["minecraft:instrument"],
+        ["minecraft:ponder_goat_horn"]
+    );
     assert!(has_overworld && has_void);
     assert!(has_tags);
     PacketFrame::new(3, Vec::new())
