@@ -10,7 +10,9 @@ required replies or an expired deadline.
 
 The chunk is all air across overworld's 24 sections (-64 through 319).
 Three client heightmaps contain zero relative heights; skylight is full across
-26 light layers, block light is empty. A section includes both block and fluid
+26 light layers, block light is empty. Each mask is a VarInt-prefixed byte
+array, with little-endian bit ordering; the 26-layer mask is `04 ff ff ff 03`.
+The older long-array BitSet encoding causes light-array decoding to misalign. A section includes both block and fluid
 counts in 26.3. Single-value palettes have no long-array length prefix.
 These layouts were verified against Mojang's official 26.3 server classes
 LevelChunkSection, PalettedContainer.Data and ClientboundLevelChunkPacketData.
@@ -21,7 +23,12 @@ is ID 0. These assumptions must be updated together with registry exports.
 Only the initial chunk is sent, with no persistence or later streaming.
 
 Loopback tests verify the entire sequence, section counts, palette IDs,
-heightmaps and light masks. Real-client loading remains an external check.
+heightmaps and light masks. After correcting the mask encoding, an actual
+packet captured from the loopback server was decoded completely with the
+official 26.3 ClientboundLevelChunkWithLightPacket.STREAM_CODEC and re-encoded
+byte-for-byte identically; all 26 sky arrays had length 2048. This verifies
+packet wire compatibility, not completion of the client's loading screen.
+Real-client loading remains an external check.
 
 ## Connection maintenance
 

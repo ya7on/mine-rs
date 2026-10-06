@@ -193,3 +193,9 @@ outside this connection demo. Spawn position includes dimension, yaw and pitch.
 Play KeepAlive shares one body codec across directions: a signed big-endian
 Long ID. Packet IDs, request scheduling, reply matching and timeouts belong
 to the server.
+
+Protocol-777 MCBitSet encodes a VarInt-prefixed byte array in Java
+BitSet.toByteArray order (lowest bits/bytes first), trimming trailing zeros.
+Its internal u64 words do not appear directly on the wire. The older
+VarInt-prefixed big-endian long-array representation is incompatible with
+ByteBufCodecs.BIT_SET in 26.3. Decoding is bounded to 65,536 bytes.
