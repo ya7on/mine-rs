@@ -65,8 +65,8 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
             .await?;
     }
 
-    // Feature Flags: the vanilla feature set. Update Tags: the one timeline
-    // dependency of the selected overworld dimension, referencing entry ID 0.
+    // The overworld references both a timeline tag and a static block tag.
+    // No burning behavior is implemented, so the block tag is intentionally empty.
     connection
         .write_frame(
             13,
@@ -80,14 +80,24 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
         .write_frame(
             14,
             UpdateTags {
-                registries: vec![RegistryTags {
-                    registry_id: "minecraft:timeline".into(),
-                    tags: vec![Tag {
-                        name: "minecraft:in_overworld".into(),
-                        entries: vec![0.into()].into(),
-                    }]
-                    .into(),
-                }]
+                registries: vec![
+                    RegistryTags {
+                        registry_id: "minecraft:timeline".into(),
+                        tags: vec![Tag {
+                            name: "minecraft:in_overworld".into(),
+                            entries: vec![0.into()].into(),
+                        }]
+                        .into(),
+                    },
+                    RegistryTags {
+                        registry_id: "minecraft:block".into(),
+                        tags: vec![Tag {
+                            name: "minecraft:infiniburn_overworld".into(),
+                            entries: Vec::new().into(),
+                        }]
+                        .into(),
+                    },
+                ]
                 .into(),
             }
             .pack()?,

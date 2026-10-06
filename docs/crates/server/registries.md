@@ -16,6 +16,10 @@ because the client requires nonempty variant registries even without entity
 gameplay. Variants use unconditional spawn rules rather than references to
 omitted biomes. The overworld dimension references the overworld clock and
 the `in_overworld` timeline tag; these are supplied with the day timeline.
+It also references the static block tag `infiniburn_overworld`. This tag
+is supplied with an empty entry list: the client requires the tag's presence
+to decode the dimension, while infinite-burning block behavior is outside
+this connection-only experiment. No vanilla block numeric IDs are assumed.
 This setup does not describe playable world content or create chunks.
 
 Source: Mojang's official 26.3 client archive, SHA-1

@@ -133,6 +133,13 @@ async fn completes_login_and_minimal_configuration() {
             14 => {
                 let tags = UpdateTags::unpack(&mut frame.body.as_slice()).unwrap();
                 assert_eq!(tags.registries.0[0].tags.0[0].entries.0, vec![0.into()]);
+                let block_tags = &tags.registries.0[1];
+                assert_eq!(block_tags.registry_id.as_ref(), "minecraft:block");
+                assert_eq!(
+                    block_tags.tags.0[0].name.as_ref(),
+                    "minecraft:infiniburn_overworld"
+                );
+                assert!(block_tags.tags.0[0].entries.0.is_empty());
                 has_tags = true;
             }
             3 => {
