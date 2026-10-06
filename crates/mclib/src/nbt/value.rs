@@ -14,8 +14,8 @@ pub enum Nbt {
     Double(f64),
     ByteArray(Vec<u8>),
     String(String),
-    List(Vec<Nbt>),
-    Compound(Vec<(String, Nbt)>),
+    List(Vec<Self>),
+    Compound(Vec<(String, Self)>),
     IntArray(Vec<i32>),
     LongArray(Vec<i64>),
 }
