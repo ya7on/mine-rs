@@ -58,6 +58,15 @@ and the related UTF-8 byte limit of three times that count. Supplementary
 characters such as emoji count as two UTF-16 units. Long timestamps use Minecraft's signed, big-endian 64-bit
 representation. Decoders report malformed and incomplete input as errors.
 
+## Login state
+
+The login module currently implements only serverbound `LoginStart` for
+protocol 777 (Login packet ID `0x00`), following `plans/wiki.md`:
+a username limited to 16 UTF-16 code units, followed by a 16-byte UUID.
+The UUID is a client claim, not authenticated identity. Username policy and
+offline identity selection belong to the server. This body codec does not
+change the server's current Status-only connection handling.
+
 ## Field types
 
 The `types` module provides the wire types used by packet bodies. Every type

@@ -4,4 +4,5 @@
 //! not represented here.
 
 pub mod handshaking;
+pub mod login;
 pub mod status;
