@@ -4,6 +4,8 @@ use mclib::packets::configuration::{KnownPacks, RegistryData, UpdateTags};
 use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::login::clientbound::{Disconnect, LoginSuccess};
 use mclib::packets::login::serverbound::{LoginAcknowledged, LoginStart};
+use mclib::packets::play::clientbound::{Login, SynchronizePlayerPosition};
+use mclib::packets::play::serverbound::ConfirmTeleportation;
 use mclib::{MCType, PacketFrame};
 use server::config::StatusConfig;
 use server::connection::Connection;
@@ -219,6 +221,39 @@ async fn completes_login_and_vanilla_configuration() {
         .write(&mut stream)
         .await
         .unwrap();
+    let frame = reply(&mut stream).await;
+    assert_eq!(frame.packet_id.0, 0x32);
+    let login = Login::unpack(&mut frame.body.as_slice()).unwrap();
+    assert_eq!(login.dimension_type.0, 0);
+    assert_eq!(login.dimension_name.as_ref(), "minecraft:overworld");
+    assert_eq!(login.game_mode.0, 3);
+    assert!(!login.online_mode.0);
+    let frame = reply(&mut stream).await;
+    assert_eq!(frame.packet_id.0, 0x49);
+    let position = SynchronizePlayerPosition::unpack(&mut frame.body.as_slice()).unwrap();
+    assert_eq!(position.flags.0, 0);
+    assert_eq!(position.y.0, 100.0);
+    // Routine setup messages may precede the teleport acknowledgement.
+    PacketFrame::new(0x0D, Vec::new())
+        .write(&mut stream)
+        .await
+        .unwrap();
+    PacketFrame::new(
+        0,
+        ConfirmTeleportation {
+            teleport_id: position.teleport_id,
+            x: position.x,
+            y: position.y,
+            z: position.z,
+            yaw: position.yaw,
+            pitch: position.pitch,
+        }
+        .pack()
+        .unwrap(),
+    )
+    .write(&mut stream)
+    .await
+    .unwrap();
     closes(&mut stream).await;
 }
 

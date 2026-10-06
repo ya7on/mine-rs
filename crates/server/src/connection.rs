@@ -11,6 +11,7 @@ use crate::config::StatusConfig;
 mod configuration;
 mod handshaking;
 mod login;
+mod play;
 mod status;
 
 const READ_TIMEOUT: Duration = Duration::from_secs(30);
@@ -41,9 +42,10 @@ impl Connection {
                 status::Outcome::StatusAndPing | status::Outcome::PingOnly => {}
             },
             handshaking::Outcome::Login { protocol_version } => {
-                if let Some(_profile) = login::run(self, protocol_version).await? {
-                    // Play is the next step; this experiment ends at its boundary.
-                    configuration::run(self).await?;
+                if let Some(_profile) = login::run(self, protocol_version).await?
+                    && configuration::run(self).await?
+                {
+                    play::run(self).await?;
                 }
             }
             handshaking::Outcome::Transfer => {

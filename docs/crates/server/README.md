@@ -1,15 +1,15 @@
 # server
 
 `server` is a minimal Minecraft server binary supporting Status and offline
-Login for protocol 777, with vanilla Configuration registries. Play is
-not yet implemented.
+Login for protocol 777, with vanilla Configuration registries. Play initializes a spectator at (8, 100, 8) and verifies teleport confirmation.
+Chunk loading and connection maintenance are subsequent steps.
 
 ## Scope and limitations
 
 - Handshaking routes to Status or Login. Transfer remains unsupported.
 - Login proceeds to experimental Configuration, requiring the client's
   exact vanilla 26.3 core pack. After Finish Configuration acknowledgement,
-  the connection closes at the Play boundary. This is not yet a complete
+  Play sends Login and an absolute position, then closes after teleport confirmation. This is not yet a complete
   vanilla client connection. See [registries.md](registries.md) for the
   vanilla dataset and its verification limits.
 - Only uncompressed packet framing (`mclib::PacketFrame`). No compression and
@@ -42,7 +42,9 @@ not yet implemented.
   `connection/configuration.rs` negotiates Known Packs and sends the fixed
   vanilla registry set before Finish Configuration. Its boolean result
   indicates acknowledgement or controlled rejection; the coordinator owns
-  routing and socket shutdown.
+  routing and socket shutdown. `connection/play.rs` initializes the spectator
+  and validates the echoed teleport ID, position and rotation. Other bounded
+  frames are discarded because gameplay is outside this connection demo.
 
 Login accepts only protocol 777 and nonempty ASCII usernames containing
 letters, digits or underscores (maximum 16 UTF-16 units). Offline UUIDs use

@@ -174,3 +174,12 @@ carry their values and limits; validation remains local to each codec.
 
 Test both configurations with `cargo test -p mclib --no-default-features` and
 `cargo test -p mclib --no-default-features --features tokio-io`.
+
+## Play state
+
+Protocol-777 Play codecs cover Login, Synchronize Player Position and
+Confirm Teleportation. Login references the negotiated dimension registry ID;
+previous game mode uses the optional ID-plus-one encoding. Position sync
+includes velocity and an Int flag field. Unlike older clients, confirmation
+includes the resulting position and rotation. The server owns matching the
+confirmation to its outstanding teleport.
