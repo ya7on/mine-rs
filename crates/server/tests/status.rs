@@ -178,12 +178,28 @@ async fn closes_connections_that_send_a_second_status_request() {
 }
 
 #[tokio::test]
-async fn closes_connections_sending_an_unknown_packet_in_the_status_state() {
+async fn completes_a_ping_only_exchange() {
     let server = TestServer::start().await;
     let mut stream = server.connect().await;
 
     send(&mut stream, &handshake_frame()).await.unwrap();
     send(&mut stream, &ping_request_frame(1)).await.unwrap();
+    let reply = read_reply(&mut stream).await.unwrap().unwrap();
+    assert_eq!(reply.packet_id.0, 1);
+    let pong = PongResponse::unpack(&mut Cursor::new(reply.body)).unwrap();
+    assert_eq!(pong.timestamp, MCLong(1));
+    read_closes(&mut stream).await;
+}
+
+#[tokio::test]
+async fn closes_connections_sending_an_unknown_packet_in_the_status_state() {
+    let server = TestServer::start().await;
+    let mut stream = server.connect().await;
+
+    send(&mut stream, &handshake_frame()).await.unwrap();
+    send(&mut stream, &PacketFrame::new(2, Vec::new()))
+        .await
+        .unwrap();
     read_closes(&mut stream).await;
 }
 

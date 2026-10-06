@@ -21,12 +21,23 @@ a JSON document, and echoes the status ping.
   document for protocol 777.
 - `listener` binds the address and spawns one Tokio task per accepted
   connection. Failures on a single connection never stop the accept loop.
-- `connection` holds the per-connection state machine:
-  Handshaking → AwaitingStatusRequest → AwaitingPingRequest → close.
+- `connection` owns the socket and drives phases through sequential async
+  calls: Handshaking → Status → close. `connection/handshaking.rs` reads and
+  validates the handshake packet and returns a typed `Status`, `Login`, or
+  `Transfer` outcome. Unknown intents are protocol errors. `Connection::run`
+  selects the handler from this outcome; phase handlers do not
+  choose the next phase. `connection/status.rs` optionally answers a status
+  request, then echoes the ping, without separate waiting states. It returns
+  `StatusAndPing` or `PingOnly`; both exchanges end the connection.
+  After Status returns successfully, `Connection::run` explicitly shuts down
+  the socket's write side; dropping the connection releases the socket.
+  On errors the caller must drop the connection, as the listener does.
+  Login, Configuration, and Play are planned
+  protocol phases, not implemented handlers.
 
 The state machine enforces the protocol's sequencing rules: the handshake must
-arrive first with intent 1 (Status), exactly one status request may be
-answered, the ping request is answered by echoing its timestamp, and any other
+arrive first with intent 1 (Status), at most one status request may be
+answered before the ping, the ping request is answered by echoing its timestamp, and any other
 packet ID or ordering closes the connection. Each connection also has a
 30-second timeout for each complete frame, including its length prefix and
 payload. Partial progress does not reset the deadline; expiry reports an I/O

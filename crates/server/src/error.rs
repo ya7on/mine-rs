@@ -13,6 +13,7 @@ pub enum ConnectionError {
         expected: &'static str,
     },
     HandshakeRequired,
+    UnsupportedIntent(&'static str),
 }
 
 impl From<std::io::Error> for ConnectionError {
@@ -43,6 +44,9 @@ impl std::fmt::Display for ConnectionError {
             }
             Self::HandshakeRequired => {
                 formatter.write_str("connection closed before a handshake arrived")
+            }
+            Self::UnsupportedIntent(intent) => {
+                write!(formatter, "unsupported handshake intent: {intent}")
             }
         }
     }
