@@ -1,4 +1,4 @@
-//! A minimal Minecraft server that only serves the status protocol.
+//! A minimal Minecraft server supporting Status and offline Login.
 
 pub mod config;
 pub mod connection;

@@ -65,12 +65,18 @@ protocol 777 (Login packet ID `0x00`), following `plans/wiki.md`:
 a username limited to 16 UTF-16 code units, followed by a 16-byte UUID.
 The UUID is a client claim, not authenticated identity. Username policy and
 offline identity selection belong to the server. This body codec does not
-change the server's current Status-only connection handling.
+control server connection handling.
 
 Serverbound `LoginAcknowledged` (Login packet ID `0x03`) has an empty
 body. The client sends it after Login Success; receiving it allows the
 server to proceed to Configuration. Checking packet order and complete body
 consumption belongs to the server, as with other packet body codecs.
+
+Clientbound `LoginSuccess` (Login packet ID `0x02`) encodes a `GameProfile`
+followed by a separate session UUID, as specified for protocol 777. This
+layout must not be reused for older protocol versions. `GameProfile` has
+a UUID, a 16-unit username and at most 16 properties. Property names are
+limited to 64 UTF-16 units, values to 32767, and optional signatures to 1024.
 
 Clientbound `Disconnect` (Login packet ID `0x00`) carries a JSON text
 component in a protocol string. Configuration and Play disconnect reasons

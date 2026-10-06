@@ -143,7 +143,7 @@ async fn reports_the_configured_status_settings() {
 }
 
 #[tokio::test]
-async fn closes_connections_without_a_status_intent() {
+async fn closes_connections_with_an_unsupported_transfer_intent() {
     let server = TestServer::start().await;
     let mut stream = server.connect().await;
 
@@ -151,7 +151,7 @@ async fn closes_connections_without_a_status_intent() {
         protocol_version: 777.into(),
         server_address: "127.0.0.1".into(),
         server_port: 25_565,
-        intent: intent::LOGIN.into(),
+        intent: intent::TRANSFER.into(),
     };
     send(
         &mut stream,

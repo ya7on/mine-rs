@@ -9,11 +9,12 @@ use tokio::time::timeout;
 use crate::ConnectionError;
 use crate::config::StatusConfig;
 mod handshaking;
+mod login;
 mod status;
 
 const READ_TIMEOUT: Duration = Duration::from_secs(30);
 
-/// Serves one TCP connection: a handshake followed by the status exchange.
+/// Serves one TCP connection through Status or offline Login.
 #[derive(Debug)]
 pub struct Connection {
     stream: TcpStream,
@@ -27,7 +28,7 @@ impl Connection {
         Self { stream, status }
     }
 
-    /// Drives the connection from handshake to ping and closes it.
+    /// Runs the requested phase and closes the connection.
     ///
     /// # Errors
     ///
@@ -38,9 +39,10 @@ impl Connection {
             handshaking::Outcome::Status => match status::run(self).await? {
                 status::Outcome::StatusAndPing | status::Outcome::PingOnly => {}
             },
-            // Login and Transfer remain unsupported until the Login phase exists.
-            handshaking::Outcome::Login => {
-                return Err(ConnectionError::UnsupportedIntent("login"));
+            handshaking::Outcome::Login { protocol_version } => {
+                // Configuration is the next incremental step. Do not send a
+                // Login disconnect after acknowledgement: the client changed state.
+                let _profile = login::run(self, protocol_version).await?;
             }
             handshaking::Outcome::Transfer => {
                 return Err(ConnectionError::UnsupportedIntent("transfer"));

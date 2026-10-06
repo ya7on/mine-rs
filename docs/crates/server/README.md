@@ -1,13 +1,13 @@
 # server
 
-`server` is a minimal Minecraft server binary that covers only the STATUS
-stage of a connection. It accepts a Handshake, answers one status request with
-a JSON document, and echoes the status ping.
+`server` is a minimal Minecraft server binary supporting Status and offline
+Login for protocol 777. Configuration and Play are not yet implemented.
 
 ## Scope and limitations
 
-- Only the Handshaking → Status path is implemented. Any other intent
-  (Login, Transfer) closes the connection.
+- Handshaking routes to Status or Login. Transfer remains unsupported.
+- Login ends after Login Acknowledged at the Configuration boundary; the
+  connection then closes. This is not yet a complete vanilla client connection.
 - Only uncompressed packet framing (`mclib::PacketFrame`). No compression and
   no encryption, which matches the status stage of the protocol.
 - The Legacy Server List Ping (`0xFE`) is not handled.
@@ -32,8 +32,21 @@ a JSON document, and echoes the status ping.
   After Status returns successfully, `Connection::run` explicitly shuts down
   the socket's write side; dropping the connection releases the socket.
   On errors the caller must drop the connection, as the listener does.
-  Login, Configuration, and Play are planned
-  protocol phases, not implemented handlers.
+  `connection/login.rs` reads Login Start, derives an offline profile, sends
+  Login Success and waits for Login Acknowledged. It returns the profile to
+  the coordinator, or `None` after a controlled Login rejection.
+
+Login accepts only protocol 777 and nonempty ASCII usernames containing
+letters, digits or underscores (maximum 16 UTF-16 units). Offline UUIDs use
+Java's name UUID algorithm: MD5 of `OfflinePlayer:<name>` with UUID v3 bits,
+without a namespace prefix. Client UUID claims are ignored. Profiles have
+no properties and each Login Success has a random v4 session UUID.
+There is no authentication, encryption or compression. A wrong version or
+invalid username receives a JSON Login Disconnect; malformed packets close
+the socket. Packet bodies must be consumed completely, including the empty
+acknowledgement. After acknowledgement the client is in Configuration, so
+the server must not send a Login Disconnect. Each Login read uses the same
+complete-frame deadline as Status.
 
 The state machine enforces the protocol's sequencing rules: the handshake must
 arrive first with intent 1 (Status), at most one status request may be

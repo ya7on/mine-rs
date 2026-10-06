@@ -6,6 +6,7 @@ pub mod byte;
 pub mod byte_array;
 pub mod double;
 pub mod float;
+pub mod game_profile;
 pub mod int;
 pub mod long;
 pub mod position;

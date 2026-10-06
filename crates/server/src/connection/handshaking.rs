@@ -10,7 +10,7 @@ use crate::connection::Connection;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Outcome {
     Status,
-    Login,
+    Login { protocol_version: i32 },
     Transfer,
 }
 
@@ -27,7 +27,9 @@ pub async fn run(connection: &mut Connection) -> Result<Outcome, ConnectionError
     let handshake = Handshake::unpack(&mut Cursor::new(frame.body))?;
     match handshake.intent.0 {
         intent::STATUS => Ok(Outcome::Status),
-        intent::LOGIN => Ok(Outcome::Login),
+        intent::LOGIN => Ok(Outcome::Login {
+            protocol_version: handshake.protocol_version.0,
+        }),
         intent::TRANSFER => Ok(Outcome::Transfer),
         _ => Err(ProtocolError::InvalidData.into()),
     }

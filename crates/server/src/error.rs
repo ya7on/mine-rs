@@ -1,9 +1,9 @@
 use mclib::ProtocolError;
 
-/// Errors that end a status connection.
+/// Errors that end a connection.
 ///
-/// Every variant is fatal for the connection; the protocol has no disconnect
-/// packet in the status state, so recovery means closing the socket.
+/// Every variant is fatal for the connection. Controlled Login rejections
+/// send a disconnect separately; errors require closing the socket.
 #[derive(Debug)]
 pub enum ConnectionError {
     Io(std::io::Error),

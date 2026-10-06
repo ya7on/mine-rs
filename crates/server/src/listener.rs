@@ -18,7 +18,7 @@ pub async fn listen(config: &Config) -> std::io::Result<()> {
                 let status = config.status.clone();
                 tokio::spawn(async move {
                     match Connection::new(stream, status).run().await {
-                        Ok(()) => log::info!("{peer}: status exchange finished"),
+                        Ok(()) => log::info!("{peer}: connection exchange finished"),
                         Err(error) => log::info!("{peer}: closing connection: {error}"),
                     }
                 });
