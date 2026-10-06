@@ -110,6 +110,7 @@ async fn completes_login_and_minimal_configuration() {
     let mut entries = 0;
     let mut has_overworld = false;
     let mut has_void = false;
+    let mut has_tags = false;
     loop {
         let frame = reply(&mut stream).await;
         match frame.packet_id.0 {
@@ -128,9 +129,11 @@ async fn completes_login_and_minimal_configuration() {
                 }
             }
             13 => {}
-            12 => {
+            // Protocol 777: 0x0E is Update Tags; 0x0C is Transfer.
+            14 => {
                 let tags = UpdateTags::unpack(&mut frame.body.as_slice()).unwrap();
                 assert_eq!(tags.registries.0[0].tags.0[0].entries.0, vec![0.into()]);
+                has_tags = true;
             }
             3 => {
                 assert!(frame.body.is_empty());
@@ -142,6 +145,7 @@ async fn completes_login_and_minimal_configuration() {
     assert_eq!(registries, 32);
     assert_eq!(entries, 18);
     assert!(has_overworld && has_void);
+    assert!(has_tags);
     PacketFrame::new(3, Vec::new())
         .write(&mut stream)
         .await

@@ -31,6 +31,11 @@ empty acknowledgement. The coordinator closes at the Play boundary until
 Play is implemented. An unmatched core pack receives a Configuration
 Disconnect using network NBT.
 
+For protocol 777, clientbound Update Tags is `0x0E`; `0x0C` is Transfer.
+After receiving Finish Configuration acknowledgement, the server logs
+`Configuration acknowledged by client`. A vanilla client reaching this
+message proves it accepted Configuration, even though Play is not implemented.
+
 Loopback integration tests prove the wire sequence, registry counts,
 omitted NBT, tag ID and rejection path. They do **not** prove that the
 vanilla client accepts this reduced set. That requires a real 26.3 client

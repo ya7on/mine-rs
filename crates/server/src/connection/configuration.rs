@@ -78,7 +78,7 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
         .await?;
     connection
         .write_frame(
-            12,
+            14,
             UpdateTags {
                 registries: vec![RegistryTags {
                     registry_id: "minecraft:timeline".into(),
@@ -100,6 +100,7 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
     if !frame.body.is_empty() {
         return Err(ProtocolError::InvalidData.into());
     }
+    log::info!("Configuration acknowledged by client");
     Ok(true)
 }
 
