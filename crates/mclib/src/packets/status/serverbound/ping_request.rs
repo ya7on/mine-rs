@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::types::{MCLong, MCType, ProtocolError};
+use crate::{MCLong, MCType, ProtocolError};
 
 /// Carries the timestamp used to measure status-ping latency.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

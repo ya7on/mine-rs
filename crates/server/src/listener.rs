@@ -1,33 +1,38 @@
-use std::net::{TcpListener, TcpStream};
+use std::net::TcpListener;
 use std::thread;
 
-use crate::config::{Config, StatusConfig};
+use crate::config::Config;
 use crate::connection::Connection;
 
 /// Accepts connections and serves each one on its own thread.
-pub fn listen(config: Config) -> std::io::Result<()> {
+///
+/// # Errors
+///
+/// Returns the I/O error from [`TcpListener::bind`]; failures on individual
+/// connections are logged and never stop the accept loop.
+pub fn listen(config: &Config) -> std::io::Result<()> {
     let listener = TcpListener::bind(config.addr)?;
     log::info!("listening on {}", config.addr);
 
     for stream in listener.incoming() {
         match stream {
-            Ok(stream) => spawn_handler(stream, config.status.clone()),
+            Ok(stream) => {
+                let Ok(peer) = stream.peer_addr() else {
+                    continue;
+                };
+                let status = config.status.clone();
+                thread::spawn(move || {
+                    match Connection::new(stream, status)
+                        .and_then(|mut connection| connection.run())
+                    {
+                        Ok(()) => log::info!("{peer}: status exchange finished"),
+                        Err(error) => log::info!("{peer}: closing connection: {error}"),
+                    }
+                });
+            }
             Err(error) => log::warn!("accept failed: {error}"),
         }
     }
 
     Ok(())
-}
-
-fn spawn_handler(stream: TcpStream, status: StatusConfig) {
-    let Ok(peer) = stream.peer_addr() else {
-        return;
-    };
-
-    thread::spawn(move || {
-        match Connection::new(stream, status).and_then(|mut connection| connection.run()) {
-            Ok(()) => log::info!("{peer}: status exchange finished"),
-            Err(error) => log::info!("{peer}: closing connection: {error}"),
-        }
-    });
 }

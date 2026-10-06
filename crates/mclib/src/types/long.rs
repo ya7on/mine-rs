@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use super::{MCType, ProtocolError};
+use crate::{MCType, ProtocolError};
 
 /// A signed, big-endian 64-bit Minecraft `Long`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

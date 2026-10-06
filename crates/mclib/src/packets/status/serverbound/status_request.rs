@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::types::{MCType, ProtocolError};
+use crate::{MCType, ProtocolError};
 
 /// Requests the server's status document.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]

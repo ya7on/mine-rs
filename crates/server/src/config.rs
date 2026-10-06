@@ -22,6 +22,11 @@ pub struct Cli {
 }
 
 impl Cli {
+    /// Builds the runtime configuration from CLI arguments.
+    ///
+    /// # Errors
+    ///
+    /// Returns a human-readable message when the bind address is invalid.
     pub fn config(&self) -> Result<Config, String> {
         let address = format!("{}:{}", self.bind, self.port);
         let addr = address

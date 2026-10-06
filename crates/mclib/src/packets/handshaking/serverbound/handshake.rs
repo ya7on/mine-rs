@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::types::{MCString, MCType, MCVarInt, ProtocolError};
+use crate::{MCString, MCType, MCVarInt, ProtocolError};
 
 /// Opens a connection and switches the server into the target state.
 ///

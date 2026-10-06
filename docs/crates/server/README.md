@@ -51,3 +51,7 @@ Unit tests cover the CLI config parsing. `tests/status.rs` runs real socket
 tests: a loopback listener serves each case and the test client drives the
 protocol with `PacketFrame` sequences, asserting the JSON answer, the echoed
 pong, and clean connection closure on protocol violations.
+
+Clippy's strict lint level applies to production code only; it is run without
+`--all-targets`, and tests are verified by `cargo test` alone. Test code
+carries no clippy allow attributes.

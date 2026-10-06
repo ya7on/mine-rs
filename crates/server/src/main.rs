@@ -15,7 +15,7 @@ fn main() {
         }
     };
 
-    if let Err(error) = listener::listen(config) {
+    if let Err(error) = listener::listen(&config) {
         eprintln!("error: {error}");
         std::process::exit(1);
     }

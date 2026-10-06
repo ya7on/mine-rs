@@ -38,6 +38,12 @@ Crate documentation may include:
 
 ## Rust
 
+- `docs/codestyle.md` is the authoritative Rust style specification. Consult it
+  before writing or reviewing Rust code in this repository, and check new code
+  against it: no `super::` imports in production; prefer `super::*` in unit
+  tests; no lossy `as` casts, literal
+  protocol bit masks, declarative `mod.rs` files, and errors in each crate's
+  `error.rs`. Details and rationale live in that file.
 - Avoid `unsafe` unless it is necessary, narrowly scoped, and explicitly justified.
 - Do not use `unwrap()` or `expect()` in production paths unless failure would prove an internal invariant violation. Handle input, I/O, and operational failures explicitly.
 - Use domain types instead of primitive values when protocol concepts have distinct semantics.
@@ -63,7 +69,12 @@ Run applicable checks as separate commands after making changes:
 
 - `cargo fmt --check`
 - `cargo check --workspace`
-- `cargo clippy --workspace --all-targets`
+- `cargo clippy --workspace` (lib and binaries only; tests are covered by `cargo test`)
 - relevant tests for the changed crate or behavior
+
+Clippy is run without `--all-targets` and without `--tests`: the strict lint
+level (pedantic, nursery, `unwrap_used = deny`) applies to production code,
+while tests are verified by `cargo test` alone. Test code must not carry
+clippy allow attributes.
 
 Do not fix unrelated warnings or failures unless they prevent verification of the requested change. Report such blockers instead.

@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::types::{MCString, MCType, ProtocolError};
+use crate::{MCString, MCType, ProtocolError};
 
 /// The server's JSON status document.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,9 +22,8 @@ impl MCType for StatusResponse {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
     use super::*;
+    use std::io::Cursor;
 
     #[test]
     fn packs_only_the_var_int_prefixed_json_body() {

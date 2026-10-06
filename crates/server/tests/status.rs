@@ -6,7 +6,7 @@ use mclib::PacketFrame;
 use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::status::clientbound::{PongResponse, StatusResponse};
 use mclib::packets::status::serverbound::{PingRequest, StatusRequest};
-use mclib::types::{MCLong, MCType};
+use mclib::{MCLong, MCType};
 use serde_json::Value;
 use server::config::StatusConfig;
 use server::connection::Connection;
@@ -23,7 +23,7 @@ struct TestServer {
 
 impl TestServer {
     fn start() -> Self {
-        Self::with_status(STATUS.clone())
+        Self::with_status(STATUS)
     }
 
     fn with_status(status: StatusConfig) -> Self {
@@ -51,18 +51,18 @@ fn handshake_frame() -> PacketFrame {
         server_port: 25_565,
         intent: intent::STATUS.into(),
     };
-    PacketFrame::new(0, handshake.pack().unwrap()).unwrap()
+    PacketFrame::new(0, handshake.pack().unwrap())
 }
 
 fn status_request_frame() -> PacketFrame {
-    PacketFrame::new(0, StatusRequest.pack().unwrap()).unwrap()
+    PacketFrame::new(0, StatusRequest.pack().unwrap())
 }
 
 fn ping_request_frame(timestamp: i64) -> PacketFrame {
     let ping = PingRequest {
         timestamp: MCLong(timestamp),
     };
-    PacketFrame::new(1, ping.pack().unwrap()).unwrap()
+    PacketFrame::new(1, ping.pack().unwrap())
 }
 
 fn send(stream: &mut TcpStream, frame: &PacketFrame) -> Result<(), std::io::Error> {
@@ -74,7 +74,7 @@ fn send(stream: &mut TcpStream, frame: &PacketFrame) -> Result<(), std::io::Erro
 fn read_reply(stream: &mut TcpStream) -> Result<Option<PacketFrame>, std::io::Error> {
     match PacketFrame::read(stream) {
         Ok(frame) => Ok(Some(frame)),
-        Err(mclib::types::ProtocolError::Io(error))
+        Err(mclib::ProtocolError::Io(error))
             if error.kind() == std::io::ErrorKind::UnexpectedEof =>
         {
             Ok(None)
@@ -150,7 +150,7 @@ fn closes_connections_without_a_status_intent() {
     };
     send(
         &mut stream,
-        &PacketFrame::new(0, login_handshake.pack().unwrap()).unwrap(),
+        &PacketFrame::new(0, login_handshake.pack().unwrap()),
     )
     .unwrap();
 

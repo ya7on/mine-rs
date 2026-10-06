@@ -6,7 +6,7 @@ use mclib::PacketFrame;
 use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::status::clientbound::{PongResponse, StatusResponse};
 use mclib::packets::status::serverbound::{PingRequest, StatusRequest};
-use mclib::types::{MCType, ProtocolError};
+use mclib::{MCType, ProtocolError};
 use serde_json::json;
 
 use crate::config::StatusConfig;
@@ -87,6 +87,7 @@ enum State {
 }
 
 /// Serves one TCP connection: a handshake followed by the status exchange.
+#[derive(Debug)]
 pub struct Connection {
     reader: BufReader<TcpStream>,
     stream: TcpStream,
@@ -96,6 +97,11 @@ pub struct Connection {
 
 impl Connection {
     /// Prepares a connection handler for an already accepted stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ConnectionError`] when socket options cannot be applied or
+    /// the stream cannot be cloned for writing.
     pub fn new(stream: TcpStream, status: StatusConfig) -> Result<Self, ConnectionError> {
         stream.set_read_timeout(Some(READ_TIMEOUT))?;
         let stream_for_writing = stream.try_clone()?;
@@ -108,96 +114,91 @@ impl Connection {
     }
 
     /// Drives the connection from handshake to ping and closes it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ConnectionError`] on any I/O or protocol violation; every
+    /// error is fatal for the connection.
     pub fn run(&mut self) -> Result<(), ConnectionError> {
         loop {
             match self.state {
-                State::Handshaking => self.accept_handshake()?,
-                State::AwaitingStatusRequest => self.accept_status_request()?,
+                State::Handshaking => {
+                    let frame = PacketFrame::read(&mut self.reader)?;
+                    if frame.packet_id.0 != 0 {
+                        return Err(ConnectionError::UnexpectedPacket {
+                            packet_id: frame.packet_id.0,
+                            expected: "handshake",
+                        });
+                    }
+
+                    let handshake = Handshake::unpack(&mut Cursor::new(frame.body))?;
+                    if handshake.intent.0 != intent::STATUS {
+                        return Err(ConnectionError::UnexpectedPacket {
+                            packet_id: handshake.intent.0,
+                            expected: "status intent (1)",
+                        });
+                    }
+
+                    self.state = State::AwaitingStatusRequest;
+                }
+                State::AwaitingStatusRequest => {
+                    let frame = PacketFrame::read(&mut self.reader)?;
+                    if frame.packet_id.0 != 0 {
+                        return Err(ConnectionError::UnexpectedPacket {
+                            packet_id: frame.packet_id.0,
+                            expected: "status request",
+                        });
+                    }
+
+                    StatusRequest::unpack(&mut Cursor::new(frame.body))?;
+                    let json_response = json!({
+                        "version": {
+                            "name": PROTOCOL_NAME,
+                            "protocol": PROTOCOL_VERSION,
+                        },
+                        "players": {
+                            "max": self.status.max_players,
+                            "online": 0,
+                        },
+                        "description": {
+                            "text": self.status.motd,
+                        },
+                    })
+                    .to_string();
+                    self.write_frame(
+                        0,
+                        StatusResponse {
+                            json_response: json_response.as_str().into(),
+                        }
+                        .pack()?,
+                    )?;
+                    self.state = State::AwaitingPingRequest;
+                }
                 State::AwaitingPingRequest => {
-                    return self.accept_ping_request();
+                    let frame = PacketFrame::read(&mut self.reader)?;
+                    if frame.packet_id.0 != 1 {
+                        return Err(ConnectionError::UnexpectedPacket {
+                            packet_id: frame.packet_id.0,
+                            expected: "ping request",
+                        });
+                    }
+
+                    let ping = PingRequest::unpack(&mut Cursor::new(frame.body))?;
+                    self.write_frame(
+                        1,
+                        PongResponse {
+                            timestamp: ping.timestamp,
+                        }
+                        .pack()?,
+                    )?;
+                    return Ok(());
                 }
             }
         }
     }
 
-    fn accept_handshake(&mut self) -> Result<(), ConnectionError> {
-        let frame = PacketFrame::read(&mut self.reader)?;
-        if frame.packet_id.0 != 0 {
-            return Err(ConnectionError::UnexpectedPacket {
-                packet_id: frame.packet_id.0,
-                expected: "handshake",
-            });
-        }
-
-        let handshake = Handshake::unpack(&mut Cursor::new(frame.body))?;
-        if handshake.intent.0 != intent::STATUS {
-            return Err(ConnectionError::UnexpectedPacket {
-                packet_id: handshake.intent.0,
-                expected: "status intent (1)",
-            });
-        }
-
-        self.state = State::AwaitingStatusRequest;
-        Ok(())
-    }
-
-    fn accept_status_request(&mut self) -> Result<(), ConnectionError> {
-        let frame = PacketFrame::read(&mut self.reader)?;
-        if frame.packet_id.0 != 0 {
-            return Err(ConnectionError::UnexpectedPacket {
-                packet_id: frame.packet_id.0,
-                expected: "status request",
-            });
-        }
-
-        StatusRequest::unpack(&mut Cursor::new(frame.body))?;
-        let json_response = json!({
-            "version": {
-                "name": PROTOCOL_NAME,
-                "protocol": PROTOCOL_VERSION,
-            },
-            "players": {
-                "max": self.status.max_players,
-                "online": 0,
-            },
-            "description": {
-                "text": self.status.motd,
-            },
-        })
-        .to_string();
-        self.write_frame(
-            0,
-            StatusResponse {
-                json_response: json_response.as_str().into(),
-            }
-            .pack()?,
-        )?;
-        self.state = State::AwaitingPingRequest;
-        Ok(())
-    }
-
-    fn accept_ping_request(&mut self) -> Result<(), ConnectionError> {
-        let frame = PacketFrame::read(&mut self.reader)?;
-        if frame.packet_id.0 != 1 {
-            return Err(ConnectionError::UnexpectedPacket {
-                packet_id: frame.packet_id.0,
-                expected: "ping request",
-            });
-        }
-
-        let ping = PingRequest::unpack(&mut Cursor::new(frame.body))?;
-        self.write_frame(
-            1,
-            PongResponse {
-                timestamp: ping.timestamp,
-            }
-            .pack()?,
-        )?;
-        Ok(())
-    }
-
     fn write_frame(&mut self, packet_id: i32, body: Vec<u8>) -> Result<(), ConnectionError> {
-        PacketFrame::new(packet_id, body)?.write(&mut self.stream)?;
+        PacketFrame::new(packet_id, body).write(&mut self.stream)?;
         self.stream.flush()?;
         Ok(())
     }

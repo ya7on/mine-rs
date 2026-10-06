@@ -5,4 +5,8 @@ edition.workspace = true
 publish = false
 
 [dependencies]
+uuid = { version = "1", default-features = false }
+
+[lints]
+workspace = true
 

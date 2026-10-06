@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::types::{MCLong, MCType, ProtocolError};
+use crate::{MCLong, MCType, ProtocolError};
 
 /// The server's response to a status ping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
