@@ -67,6 +67,11 @@ The UUID is a client claim, not authenticated identity. Username policy and
 offline identity selection belong to the server. This body codec does not
 change the server's current Status-only connection handling.
 
+Serverbound `LoginAcknowledged` (Login packet ID `0x03`) has an empty
+body. The client sends it after Login Success; receiving it allows the
+server to proceed to Configuration. Checking packet order and complete body
+consumption belongs to the server, as with other packet body codecs.
+
 Clientbound `Disconnect` (Login packet ID `0x00`) carries a JSON text
 component in a protocol string. Configuration and Play disconnect reasons
 use network NBT instead; the Login codec cannot be reused for those states.
