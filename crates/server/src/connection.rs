@@ -8,6 +8,7 @@ use tokio::time::timeout;
 
 use crate::ConnectionError;
 use crate::config::StatusConfig;
+mod configuration;
 mod handshaking;
 mod login;
 mod status;
@@ -40,9 +41,10 @@ impl Connection {
                 status::Outcome::StatusAndPing | status::Outcome::PingOnly => {}
             },
             handshaking::Outcome::Login { protocol_version } => {
-                // Configuration is the next incremental step. Do not send a
-                // Login disconnect after acknowledgement: the client changed state.
-                let _profile = login::run(self, protocol_version).await?;
+                if let Some(_profile) = login::run(self, protocol_version).await? {
+                    // Play is the next step; this experiment ends at its boundary.
+                    configuration::run(self).await?;
+                }
             }
             handshaking::Outcome::Transfer => {
                 return Err(ConnectionError::UnsupportedIntent("transfer"));

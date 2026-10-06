@@ -84,6 +84,18 @@ use network NBT instead; the Login codec cannot be reused for those states.
 As with Status JSON, the codec validates string encoding and bounds, while
 the caller owns the JSON document's content.
 
+## Configuration state
+
+Configuration codecs cover Known Packs, Registry Data, Client Information,
+Feature Flags, Update Tags, and empty Finish Configuration for protocol 777.
+Bodies identical in both directions share one codec. Registry entries use
+a boolean-prefixed optional network NBT value; omission requires negotiated
+pack knowledge. Update Tags references numeric registry entry IDs.
+
+Collection codecs use local safety limits (64 packs, flags or tag registries;
+4096 entries or tags). These are implementation bounds, not protocol limits.
+The server owns packet IDs, negotiation, sequencing and registry content.
+
 ## Field types
 
 The `types` module provides the wire types used by packet bodies. Every type

@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use mclib::packets::configuration::{KnownPacks, RegistryData, UpdateTags};
 use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::login::clientbound::{Disconnect, LoginSuccess};
 use mclib::packets::login::serverbound::{LoginAcknowledged, LoginStart};
@@ -71,7 +72,7 @@ async fn closes(stream: &mut TcpStream) {
 }
 
 #[tokio::test]
-async fn completes_offline_login_until_configuration_boundary() {
+async fn completes_login_and_minimal_configuration() {
     let mut stream = connect(777).await;
     start(&mut stream, "Notch").await;
     let frame = reply(&mut stream).await;
@@ -88,6 +89,84 @@ async fn completes_offline_login_until_configuration_boundary() {
         .write(&mut stream)
         .await
         .unwrap();
+    let known = reply(&mut stream).await;
+    assert_eq!(known.packet_id.0, 15);
+    let packs = KnownPacks::unpack(&mut known.body.as_slice()).unwrap();
+    assert_eq!(packs.packs.0.len(), 1);
+    assert_eq!(packs.packs.0[0].version.as_ref(), "26.3");
+    // Settings and plugin messages can precede the Known Packs response.
+    PacketFrame::new(
+        2,
+        [b"\x0fminecraft:brand".as_slice(), b"\x07vanilla"].concat(),
+    )
+    .write(&mut stream)
+    .await
+    .unwrap();
+    PacketFrame::new(7, packs.pack().unwrap())
+        .write(&mut stream)
+        .await
+        .unwrap();
+    let mut registries = 0;
+    let mut entries = 0;
+    let mut has_overworld = false;
+    let mut has_void = false;
+    loop {
+        let frame = reply(&mut stream).await;
+        match frame.packet_id.0 {
+            7 => {
+                let data = RegistryData::unpack(&mut frame.body.as_slice()).unwrap();
+                registries += 1;
+                entries += data.entries.0.len();
+                assert!(data.entries.0.iter().all(|entry| entry.data.is_none()));
+                if data.registry_id.as_ref() == "minecraft:dimension_type" {
+                    assert_eq!(data.entries.0[0].id.as_ref(), "minecraft:overworld");
+                    has_overworld = true;
+                }
+                if data.registry_id.as_ref() == "minecraft:worldgen/biome" {
+                    assert_eq!(data.entries.0[0].id.as_ref(), "minecraft:the_void");
+                    has_void = true;
+                }
+            }
+            13 => {}
+            12 => {
+                let tags = UpdateTags::unpack(&mut frame.body.as_slice()).unwrap();
+                assert_eq!(tags.registries.0[0].tags.0[0].entries.0, vec![0.into()]);
+            }
+            3 => {
+                assert!(frame.body.is_empty());
+                break;
+            }
+            other => panic!("unexpected configuration packet {other}"),
+        }
+    }
+    assert_eq!(registries, 32);
+    assert_eq!(entries, 18);
+    assert!(has_overworld && has_void);
+    PacketFrame::new(3, Vec::new())
+        .write(&mut stream)
+        .await
+        .unwrap();
+    closes(&mut stream).await;
+}
+
+#[tokio::test]
+async fn rejects_a_client_without_the_required_core_pack() {
+    let mut stream = connect(777).await;
+    start(&mut stream, "Notch").await;
+    assert_eq!(reply(&mut stream).await.packet_id.0, 2);
+    PacketFrame::new(3, Vec::new())
+        .write(&mut stream)
+        .await
+        .unwrap();
+    assert_eq!(reply(&mut stream).await.packet_id.0, 15);
+    PacketFrame::new(7, vec![0])
+        .write(&mut stream)
+        .await
+        .unwrap();
+    let rejection = reply(&mut stream).await;
+    assert_eq!(rejection.packet_id.0, 2);
+    let reason = mclib::nbt::Nbt::decode_network(&mut rejection.body.as_slice()).unwrap();
+    assert!(matches!(reason, mclib::nbt::Nbt::Compound(_)));
     closes(&mut stream).await;
 }
 

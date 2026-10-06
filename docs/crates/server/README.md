@@ -1,13 +1,17 @@
 # server
 
 `server` is a minimal Minecraft server binary supporting Status and offline
-Login for protocol 777. Configuration and Play are not yet implemented.
+Login for protocol 777, with experimental minimal Configuration. Play is
+not yet implemented.
 
 ## Scope and limitations
 
 - Handshaking routes to Status or Login. Transfer remains unsupported.
-- Login ends after Login Acknowledged at the Configuration boundary; the
-  connection then closes. This is not yet a complete vanilla client connection.
+- Login proceeds to experimental Configuration, requiring the client's
+  exact vanilla 26.3 core pack. After Finish Configuration acknowledgement,
+  the connection closes at the Play boundary. This is not yet a complete
+  vanilla client connection. See [registries.md](registries.md) for the
+  reduced dataset and its verification limits.
 - Only uncompressed packet framing (`mclib::PacketFrame`). No compression and
   no encryption, which matches the status stage of the protocol.
 - The Legacy Server List Ping (`0xFE`) is not handled.
@@ -35,6 +39,10 @@ Login for protocol 777. Configuration and Play are not yet implemented.
   `connection/login.rs` reads Login Start, derives an offline profile, sends
   Login Success and waits for Login Acknowledged. It returns the profile to
   the coordinator, or `None` after a controlled Login rejection.
+  `connection/configuration.rs` negotiates Known Packs and sends the fixed
+  minimal registry set before Finish Configuration. Its boolean result
+  indicates acknowledgement or controlled rejection; the coordinator owns
+  routing and socket shutdown.
 
 Login accepts only protocol 777 and nonempty ASCII usernames containing
 letters, digits or underscores (maximum 16 UTF-16 units). Offline UUIDs use

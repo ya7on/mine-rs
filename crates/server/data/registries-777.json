@@ -1,0 +1,70 @@
+{
+  "minecraft:worldgen/biome": [
+    "minecraft:the_void"
+  ],
+  "minecraft:chat_type": [],
+  "minecraft:trim_pattern": [],
+  "minecraft:trim_material": [],
+  "minecraft:wolf_variant": [
+    "minecraft:pale"
+  ],
+  "minecraft:wolf_sound_variant": [
+    "minecraft:classic"
+  ],
+  "minecraft:pig_variant": [
+    "minecraft:temperate"
+  ],
+  "minecraft:pig_sound_variant": [
+    "minecraft:classic"
+  ],
+  "minecraft:frog_variant": [
+    "minecraft:temperate"
+  ],
+  "minecraft:cat_variant": [
+    "minecraft:tabby"
+  ],
+  "minecraft:cat_sound_variant": [
+    "minecraft:classic"
+  ],
+  "minecraft:cow_sound_variant": [
+    "minecraft:classic"
+  ],
+  "minecraft:cow_variant": [
+    "minecraft:temperate"
+  ],
+  "minecraft:chicken_sound_variant": [
+    "minecraft:classic"
+  ],
+  "minecraft:chicken_variant": [
+    "minecraft:temperate"
+  ],
+  "minecraft:zombie_nautilus_variant": [
+    "minecraft:temperate"
+  ],
+  "minecraft:painting_variant": [
+    "minecraft:kebab"
+  ],
+  "minecraft:sulfur_cube_archetype": [],
+  "minecraft:dimension_type": [
+    "minecraft:overworld"
+  ],
+  "minecraft:damage_type": [
+    "minecraft:generic"
+  ],
+  "minecraft:banner_pattern": [],
+  "minecraft:enchantment": [],
+  "minecraft:jukebox_song": [],
+  "minecraft:instrument": [],
+  "minecraft:test_environment": [],
+  "minecraft:test_instance": [],
+  "minecraft:dialog": [],
+  "minecraft:world_clock": [
+    "minecraft:overworld"
+  ],
+  "minecraft:timeline": [
+    "minecraft:day"
+  ],
+  "minecraft:decorated_pot_pattern": [],
+  "minecraft:block_transformer": [],
+  "minecraft:worldgen/block_state_provider": []
+}
