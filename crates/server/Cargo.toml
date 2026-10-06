@@ -16,3 +16,6 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-uti
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+tokio = { version = "1", features = ["test-util"] }

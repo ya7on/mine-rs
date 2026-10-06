@@ -1,18 +1,16 @@
 # server
 
-`server` is a minimal Minecraft server binary supporting Status and offline
-Login for protocol 777, with vanilla Configuration registries. Play initializes a spectator at (8, 100, 8) and verifies teleport confirmation.
-One empty chunk completes the loading sequence; connection maintenance is
-a subsequent step.
+`server` is a minimal Minecraft server supporting Status and offline Login
+for protocol 777, vanilla Configuration registries and connection-only Play.
+Play initializes a spectator at (8, 100, 8), sends one empty chunk and maintains
+the connection with Keep Alive. No world simulation is implemented.
 
 ## Scope and limitations
 
 - Handshaking routes to Status or Login. Transfer remains unsupported.
-- Login proceeds to experimental Configuration, requiring the client's
-  exact vanilla 26.3 core pack. After Finish Configuration acknowledgement,
-  Play sends Login and an absolute position, sends a single empty chunk, then closes after teleport confirmation. This is not yet a complete
-  vanilla client connection. See [registries.md](registries.md) for the
-  vanilla dataset and its verification limits.
+- Login proceeds to Configuration, requiring the exact vanilla 26.3 core
+  pack, then Play. See [registries.md](registries.md) for the vanilla dataset
+  and [play.md](play.md) for the connection lifecycle and verification limits.
 - Only uncompressed packet framing (`mclib::PacketFrame`). No compression and
   no encryption, which matches the status stage of the protocol.
 - The Legacy Server List Ping (`0xFE`) is not handled.
@@ -74,10 +72,12 @@ Wire encoding is delegated to `mclib`: packet bodies (`Handshake`,
 from `mclib::PacketFrame`. The server uses async `PacketFrame::read` and `write`; body codecs operate
 synchronously on memory. The server enables mclib’s `tokio-io` feature.
 The connection applies the complete-frame timeout.
-Each `Connection` owns one Tokio socket without cloning or splitting it;
+Each `Connection` owns one Tokio socket without cloning it;
 `Connection::new` returns `Self`, while `run` and `listener::listen` are async.
 Reads are sequential: cancelling a partial read requires closing the connection,
-so the reader must not be raced against resumable events in `select!`.
+so Play borrows separate read/write halves in the same task and pins each
+complete-frame read across Keep Alive timer events. Timer ticks never restart
+a partial read. Other phases read sequentially through the connection wrapper.
 `ConnectionError` lives in `error.rs` and is exported at the crate root as
 `server::ConnectionError`. The server owns sequencing, I/O, and policy.
 

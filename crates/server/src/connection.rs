@@ -16,7 +16,7 @@ mod status;
 
 const READ_TIMEOUT: Duration = Duration::from_secs(30);
 
-/// Serves one TCP connection through Status or offline Login.
+/// Serves one TCP connection through Status or offline Login and Play.
 #[derive(Debug)]
 pub struct Connection {
     stream: TcpStream,
@@ -30,7 +30,7 @@ impl Connection {
         Self { stream, status }
     }
 
-    /// Runs the requested phase and closes the connection.
+    /// Runs the requested phases; Play maintains the connection until an error or EOF.
     ///
     /// # Errors
     ///

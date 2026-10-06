@@ -189,3 +189,7 @@ not the old NBT heightmap compound. EmptyChunkSection represents only all-air,
 fluid-free sections with one biome: both short counts precede the two palettes,
 and single-value palettes omit storage entirely. General terrain palettes are
 outside this connection demo. Spawn position includes dimension, yaw and pitch.
+
+Play KeepAlive shares one body codec across directions: a signed big-endian
+Long ID. Packet IDs, request scheduling, reply matching and timeouts belong
+to the server.

@@ -4,6 +4,7 @@ use mclib::packets::configuration::{KnownPacks, RegistryData, UpdateTags};
 use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::login::clientbound::{Disconnect, LoginSuccess};
 use mclib::packets::login::serverbound::{LoginAcknowledged, LoginStart};
+use mclib::packets::play::KeepAlive;
 use mclib::packets::play::clientbound::{
     ChunkDataAndUpdateLight, EmptyChunkSection, GameEvent, Login, SetDefaultSpawnPosition,
     SynchronizePlayerPosition,
@@ -76,8 +77,7 @@ async fn closes(stream: &mut TcpStream) {
     );
 }
 
-#[tokio::test]
-async fn completes_login_and_vanilla_configuration() {
+async fn enter_play() -> TcpStream {
     let mut stream = connect(777).await;
     start(&mut stream, "Notch").await;
     let frame = reply(&mut stream).await;
@@ -306,6 +306,41 @@ async fn completes_login_and_vanilla_configuration() {
     let frame = reply(&mut stream).await;
     assert_eq!(frame.packet_id.0, 0x0B);
     assert_eq!(frame.body, [1]);
+    stream
+}
+
+async fn keep_alive(stream: &mut TcpStream) -> KeepAlive {
+    let frame = reply(stream).await;
+    assert_eq!(frame.packet_id.0, 0x2D);
+    assert_eq!(frame.body.len(), 8);
+    KeepAlive::unpack(&mut frame.body.as_slice()).unwrap()
+}
+
+async fn echo_keep_alive(stream: &mut TcpStream, packet: &KeepAlive) {
+    PacketFrame::new(0x1C, packet.pack().unwrap())
+        .write(stream)
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn completes_connection_and_keep_alive_exchange() {
+    let mut stream = enter_play().await;
+    let first = keep_alive(&mut stream).await;
+    echo_keep_alive(&mut stream, &first).await;
+    assert!(
+        timeout(Duration::from_millis(50), stream.read(&mut [0]))
+            .await
+            .is_err()
+    );
+}
+
+#[tokio::test]
+async fn rejects_wrong_keep_alive_id() {
+    let mut stream = enter_play().await;
+    let mut packet = keep_alive(&mut stream).await;
+    packet.id.0 += 1;
+    echo_keep_alive(&mut stream, &packet).await;
     closes(&mut stream).await;
 }
 

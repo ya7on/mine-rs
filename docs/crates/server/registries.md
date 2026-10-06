@@ -44,10 +44,10 @@ contains identifiers and tag membership, not registry NBT.
 Configuration tolerates Client Information and plugin payloads between required
 responses. It sends registry listings, vanilla Feature Flags, Update Tags
 (`0x0E` for protocol 777), and Finish Configuration, then waits for an empty
-acknowledgement. Play now initializes a spectator and closes after teleport confirmation.
+acknowledgement. Play initializes a spectator, sends one empty chunk and maintains Keep Alive.
 
 Loopback integration tests verify the wire sequence, dataset counts, omitted
 NBT, representative vanilla tag membership and pack rejection. They do not
 execute the vanilla client's registry loader. A real 26.3 client reaching
 `Configuration acknowledged by client` confirms acceptance of Configuration;
-this revised full dataset still requires that check. Play sends one empty chunk; connection maintenance is the next step.
+this revised full dataset still requires that check. Real-client Play loading remains to be verified.
