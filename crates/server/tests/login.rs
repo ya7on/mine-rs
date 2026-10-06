@@ -140,6 +140,10 @@ async fn completes_login_and_minimal_configuration() {
                     "minecraft:infiniburn_overworld"
                 );
                 assert!(block_tags.tags.0[0].entries.0.is_empty());
+                let damage_tags = &tags.registries.0[2];
+                assert_eq!(damage_tags.registry_id.as_ref(), "minecraft:damage_type");
+                assert_eq!(damage_tags.tags.0[0].name.as_ref(), "minecraft:is_fire");
+                assert!(damage_tags.tags.0[0].entries.0.is_empty());
                 has_tags = true;
             }
             3 => {

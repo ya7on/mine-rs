@@ -76,33 +76,7 @@ pub async fn run(connection: &mut Connection) -> Result<bool, ConnectionError> {
             .pack()?,
         )
         .await?;
-    connection
-        .write_frame(
-            14,
-            UpdateTags {
-                registries: vec![
-                    RegistryTags {
-                        registry_id: "minecraft:timeline".into(),
-                        tags: vec![Tag {
-                            name: "minecraft:in_overworld".into(),
-                            entries: vec![0.into()].into(),
-                        }]
-                        .into(),
-                    },
-                    RegistryTags {
-                        registry_id: "minecraft:block".into(),
-                        tags: vec![Tag {
-                            name: "minecraft:infiniburn_overworld".into(),
-                            entries: Vec::new().into(),
-                        }]
-                        .into(),
-                    },
-                ]
-                .into(),
-            }
-            .pack()?,
-        )
-        .await?;
+    connection.write_frame(14, required_tags().pack()?).await?;
     connection
         .write_frame(3, FinishConfiguration.pack()?)
         .await?;
@@ -146,5 +120,40 @@ async fn receive(
         if !body.is_empty() {
             return Err(ProtocolError::InvalidData.into());
         }
+    }
+}
+
+// Tags required by the selected dimension and client item initialization.
+fn required_tags() -> UpdateTags {
+    UpdateTags {
+        registries: vec![
+            RegistryTags {
+                registry_id: "minecraft:timeline".into(),
+                tags: vec![Tag {
+                    name: "minecraft:in_overworld".into(),
+                    entries: vec![0.into()].into(),
+                }]
+                .into(),
+            },
+            RegistryTags {
+                registry_id: "minecraft:block".into(),
+                tags: vec![Tag {
+                    name: "minecraft:infiniburn_overworld".into(),
+                    entries: Vec::new().into(),
+                }]
+                .into(),
+            },
+            // Client item component initialization resolves this tag
+            // even though no damage or item gameplay is implemented.
+            RegistryTags {
+                registry_id: "minecraft:damage_type".into(),
+                tags: vec![Tag {
+                    name: "minecraft:is_fire".into(),
+                    entries: Vec::new().into(),
+                }]
+                .into(),
+            },
+        ]
+        .into(),
     }
 }

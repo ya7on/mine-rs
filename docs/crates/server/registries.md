@@ -20,6 +20,9 @@ It also references the static block tag `infiniburn_overworld`. This tag
 is supplied with an empty entry list: the client requires the tag's presence
 to decode the dimension, while infinite-burning block behavior is outside
 this connection-only experiment. No vanilla block numeric IDs are assumed.
+Client item component initialization additionally requires the damage-type
+tag `is_fire`. It is supplied empty: our sole damage type `generic` is not
+fire damage. This dependency exists even without item or damage gameplay.
 This setup does not describe playable world content or create chunks.
 
 Source: Mojang's official 26.3 client archive, SHA-1
