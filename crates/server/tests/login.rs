@@ -4,7 +4,10 @@ use mclib::packets::configuration::{KnownPacks, RegistryData, UpdateTags};
 use mclib::packets::handshaking::serverbound::{Handshake, intent};
 use mclib::packets::login::clientbound::{Disconnect, LoginSuccess};
 use mclib::packets::login::serverbound::{LoginAcknowledged, LoginStart};
-use mclib::packets::play::clientbound::{Login, SynchronizePlayerPosition};
+use mclib::packets::play::clientbound::{
+    ChunkDataAndUpdateLight, EmptyChunkSection, GameEvent, Login, SetDefaultSpawnPosition,
+    SynchronizePlayerPosition,
+};
 use mclib::packets::play::serverbound::ConfirmTeleportation;
 use mclib::{MCType, PacketFrame};
 use server::config::StatusConfig;
@@ -254,6 +257,55 @@ async fn completes_login_and_vanilla_configuration() {
     .write(&mut stream)
     .await
     .unwrap();
+    let frame = reply(&mut stream).await;
+    assert_eq!(frame.packet_id.0, 0x63);
+    let spawn = SetDefaultSpawnPosition::unpack(&mut frame.body.as_slice()).unwrap();
+    assert_eq!(spawn.location.y, 100);
+    let frame = reply(&mut stream).await;
+    assert_eq!(frame.packet_id.0, 0x27);
+    assert_eq!(
+        GameEvent::unpack(&mut frame.body.as_slice())
+            .unwrap()
+            .event
+            .0,
+        13
+    );
+    assert_eq!(reply(&mut stream).await.packet_id.0, 0x60);
+    assert_eq!(reply(&mut stream).await.packet_id.0, 0x0C);
+    let frame = reply(&mut stream).await;
+    assert_eq!(frame.packet_id.0, 0x2E);
+    let mut body = frame.body.as_slice();
+    let chunk = ChunkDataAndUpdateLight::unpack(&mut body).unwrap();
+    assert!(body.is_empty());
+    assert_eq!((chunk.x.0, chunk.z.0), (0, 0));
+    assert_eq!(chunk.heightmaps.0.len(), 3);
+    assert!(
+        chunk
+            .heightmaps
+            .0
+            .iter()
+            .all(|map| map.data.0.len() == 37 && map.data.0.iter().all(|height| height.0 == 0))
+    );
+    let mut sections = chunk.data.0.as_slice();
+    for _ in 0..24 {
+        assert_eq!(
+            EmptyChunkSection::unpack(&mut sections).unwrap().biome.0,
+            59
+        );
+    }
+    assert!(sections.is_empty());
+    assert_eq!(chunk.sky_light.0.len(), 26);
+    assert!(
+        chunk
+            .sky_light
+            .0
+            .iter()
+            .all(|layer| layer.0 == vec![255; 2048])
+    );
+    assert!((0..26).all(|layer| chunk.sky_light_mask.get(layer) && chunk.empty_block_light_mask.get(layer)));
+    let frame = reply(&mut stream).await;
+    assert_eq!(frame.packet_id.0, 0x0B);
+    assert_eq!(frame.body, [1]);
     closes(&mut stream).await;
 }
 

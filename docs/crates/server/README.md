@@ -2,14 +2,15 @@
 
 `server` is a minimal Minecraft server binary supporting Status and offline
 Login for protocol 777, with vanilla Configuration registries. Play initializes a spectator at (8, 100, 8) and verifies teleport confirmation.
-Chunk loading and connection maintenance are subsequent steps.
+One empty chunk completes the loading sequence; connection maintenance is
+a subsequent step.
 
 ## Scope and limitations
 
 - Handshaking routes to Status or Login. Transfer remains unsupported.
 - Login proceeds to experimental Configuration, requiring the client's
   exact vanilla 26.3 core pack. After Finish Configuration acknowledgement,
-  Play sends Login and an absolute position, then closes after teleport confirmation. This is not yet a complete
+  Play sends Login and an absolute position, sends a single empty chunk, then closes after teleport confirmation. This is not yet a complete
   vanilla client connection. See [registries.md](registries.md) for the
   vanilla dataset and its verification limits.
 - Only uncompressed packet framing (`mclib::PacketFrame`). No compression and

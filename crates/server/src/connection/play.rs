@@ -1,6 +1,9 @@
-use mclib::packets::play::clientbound::{Login, SynchronizePlayerPosition};
+use mclib::packets::play::clientbound::{
+    ChunkBatchFinished, ChunkDataAndUpdateLight, EmptyChunkSection, GameEvent, Heightmap, Login,
+    SetCenterChunk, SetDefaultSpawnPosition, SynchronizePlayerPosition,
+};
 use mclib::packets::play::serverbound::ConfirmTeleportation;
-use mclib::{MCType, ProtocolError};
+use mclib::{MCBitSet, MCPosition, MCType, ProtocolError};
 
 use crate::ConnectionError;
 use crate::connection::Connection;
@@ -49,6 +52,7 @@ pub async fn run(connection: &mut Connection) -> Result<(), ConnectionError> {
         flags: 0.into(),
     };
     connection.write_frame(0x49, position.pack()?).await?;
+    send_chunk(connection).await?;
     loop {
         let frame = connection.read_frame().await?;
         if frame.packet_id.0 != 0 {
@@ -70,4 +74,73 @@ pub async fn run(connection: &mut Connection) -> Result<(), ConnectionError> {
         log::info!("Play teleport acknowledged by client");
         return Ok(());
     }
+}
+
+async fn send_chunk(connection: &mut Connection) -> Result<(), ConnectionError> {
+    connection
+        .write_frame(
+            0x63,
+            SetDefaultSpawnPosition {
+                dimension: "minecraft:overworld".into(),
+                location: MCPosition { x: 8, y: 100, z: 8 },
+                yaw: 0.0.into(),
+                pitch: 0.0.into(),
+            }
+            .pack()?,
+        )
+        .await?;
+    connection
+        .write_frame(
+            0x27,
+            GameEvent {
+                event: 13.into(),
+                value: 0.0.into(),
+            }
+            .pack()?,
+        )
+        .await?;
+    connection
+        .write_frame(
+            0x60,
+            SetCenterChunk {
+                x: 0.into(),
+                z: 0.into(),
+            }
+            .pack()?,
+        )
+        .await?;
+    // Overworld covers -64..320: 24 sections and 26 light layers.
+    // Air is static block-state ID 0; the_void is exported biome ID 59.
+    let section = EmptyChunkSection { biome: 59.into() }.pack()?;
+    let mut mask = MCBitSet::default();
+    for layer in 0..26 {
+        mask.set(layer);
+    }
+    let chunk = ChunkDataAndUpdateLight {
+        x: 0.into(),
+        z: 0.into(),
+        heightmaps: [1, 4, 5]
+            .into_iter()
+            .map(|kind| Heightmap {
+                kind: kind.into(),
+                // 256 zero heights packed at nine bits, seven per long.
+                data: vec![0.into(); 37].into(),
+            })
+            .collect::<Vec<_>>()
+            .into(),
+        data: section.repeat(24).into(),
+        block_entities: Vec::new().into(),
+        sky_light_mask: mask.clone(),
+        block_light_mask: MCBitSet::default(),
+        empty_sky_light_mask: MCBitSet::default(),
+        empty_block_light_mask: mask,
+        sky_light: vec![vec![255; 2048].into(); 26].into(),
+        block_light: Vec::new().into(),
+    };
+    connection.write_frame(0x0C, Vec::new()).await?;
+    connection.write_frame(0x2E, chunk.pack()?).await?;
+    connection
+        .write_frame(0x0B, ChunkBatchFinished { size: 1.into() }.pack()?)
+        .await?;
+    Ok(())
 }

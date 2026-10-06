@@ -183,3 +183,9 @@ previous game mode uses the optional ID-plus-one encoding. Position sync
 includes velocity and an Int flag field. Unlike older clients, confirmation
 includes the resulting position and rotation. The server owns matching the
 confirmation to its outstanding teleport.
+
+Chunk Data and Update Light uses numeric, VarInt-prefixed heightmaps in 26.3,
+not the old NBT heightmap compound. EmptyChunkSection represents only all-air,
+fluid-free sections with one biome: both short counts precede the two palettes,
+and single-value palettes omit storage entirely. General terrain palettes are
+outside this connection demo. Spawn position includes dimension, yaw and pitch.

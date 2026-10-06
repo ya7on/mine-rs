@@ -50,4 +50,4 @@ Loopback integration tests verify the wire sequence, dataset counts, omitted
 NBT, representative vanilla tag membership and pack rejection. They do not
 execute the vanilla client's registry loader. A real 26.3 client reaching
 `Configuration acknowledged by client` confirms acceptance of Configuration;
-this revised full dataset still requires that check. Chunk loading and Play connection maintenance are not implemented yet.
+this revised full dataset still requires that check. Play sends one empty chunk; connection maintenance is the next step.
