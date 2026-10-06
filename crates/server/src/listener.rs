@@ -1,30 +1,23 @@
-use std::net::TcpListener;
-use std::thread;
+use tokio::net::TcpListener;
 
 use crate::config::Config;
 use crate::connection::Connection;
 
-/// Accepts connections and serves each one on its own thread.
+/// Accepts connections and serves each one in its own Tokio task.
 ///
 /// # Errors
 ///
-/// Returns the I/O error from [`TcpListener::bind`]; failures on individual
-/// connections are logged and never stop the accept loop.
-pub fn listen(config: &Config) -> std::io::Result<()> {
-    let listener = TcpListener::bind(config.addr)?;
+/// Returns the I/O error from binding; individual connection failures are logged.
+pub async fn listen(config: &Config) -> std::io::Result<()> {
+    let listener = TcpListener::bind(config.addr).await?;
     log::info!("listening on {}", config.addr);
 
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                let Ok(peer) = stream.peer_addr() else {
-                    continue;
-                };
+    loop {
+        match listener.accept().await {
+            Ok((stream, peer)) => {
                 let status = config.status.clone();
-                thread::spawn(move || {
-                    match Connection::new(stream, status)
-                        .and_then(|mut connection| connection.run())
-                    {
+                tokio::spawn(async move {
+                    match Connection::new(stream, status).run().await {
                         Ok(()) => log::info!("{peer}: status exchange finished"),
                         Err(error) => log::info!("{peer}: closing connection: {error}"),
                     }
@@ -33,6 +26,4 @@ pub fn listen(config: &Config) -> std::io::Result<()> {
             Err(error) => log::warn!("accept failed: {error}"),
         }
     }
-
-    Ok(())
 }

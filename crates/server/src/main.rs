@@ -3,7 +3,8 @@ use clap::Parser;
 use server::config::Cli;
 use server::listener;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env_logger::init();
 
     let cli = Cli::parse();
@@ -15,7 +16,7 @@ fn main() {
         }
     };
 
-    if let Err(error) = listener::listen(&config) {
+    if let Err(error) = listener::listen(&config).await {
         eprintln!("error: {error}");
         std::process::exit(1);
     }

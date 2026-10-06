@@ -29,8 +29,17 @@ framing layer when login-state compression is implemented.
 
 The constructor only stores the packet ID and body and returns `Self`.
 `write` validates the packet ID and total size before writing any bytes and
-computes the length from the encoded ID and body. `pack` delegates to the same
-write path; protocol validation is owned by encoding, not construction.
+computes the length from the encoded ID and body. `write` delegates encoding to `pack`; protocol validation is owned by
+encoding, not construction.
+
+The optional `tokio-io` feature enables async `read` and `write`, accepting
+Tokio `AsyncRead` and `AsyncWrite`. No features are enabled by default;
+`PacketFrame`, `pack`, and body codecs are available without Tokio.
+`pack` remains synchronous and validates and encodes the whole frame before
+`write` sends any bytes. Body codecs remain synchronous and operate on memory.
+Cancelling a partial frame read requires closing the stream; restarting that
+read loses framing. With `tokio-io`, `mclib` depends on Tokio's I/O traits,
+not a runtime.
 
 ## Status state
 
@@ -124,3 +133,6 @@ three categories: `Io` preserves the underlying I/O error (including
 length, size, and nesting bounds, and `InvalidData` covers invalid values,
 encodings, and structures. Errors do not identify individual wire types or
 carry their values and limits; validation remains local to each codec.
+
+Test both configurations with `cargo test -p mclib --no-default-features` and
+`cargo test -p mclib --no-default-features --features tokio-io`.

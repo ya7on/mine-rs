@@ -1,0 +1,35 @@
+[
+  {
+    "date": "2026-10-06",
+    "mode": "Architecture Audit",
+    "score": 75,
+    "findings": {
+      "critical": 1,
+      "warning": 2,
+      "suggestion": 0
+    },
+    "scope": "crates/mclib/src/nbt"
+  },
+  {
+    "date": "2026-10-06",
+    "mode": "PR Review",
+    "score": 97,
+    "findings": {
+      "critical": 0,
+      "warning": 0,
+      "suggestion": 3
+    },
+    "scope": "working tree changes (11 files): async migration of mclib framing and server"
+  },
+  {
+    "date": "2026-10-06",
+    "mode": "PR Review",
+    "score": 100,
+    "findings": {
+      "critical": 0,
+      "warning": 0,
+      "suggestion": 0
+    },
+    "scope": "sampled unstaged async migration: 11 source/manifest/documentation files, including untracked error.rs; Cargo.lock excluded"
+  }
+]
